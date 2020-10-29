@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  endpoint:
+    build:
+      context: ./endpoint
+      target: development
+    ports:
+      - "5000:5000"
+    restart: always
+    volumes:
+      - ./endpoint:/app
