@@ -1,6 +1,12 @@
 version: "3.8"
+
+x-base: &base
+  env_file:
+    - ./.env.dev
+
 services:
   endpoint:
+    <<: *base
     build:
       context: ./endpoint
       target: development
