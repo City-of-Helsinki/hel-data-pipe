@@ -1,0 +1,67 @@
+include:
+  - project: "city-of-helsinki/kuva/ci-cd-config/ci-configuration"
+    ref: v2
+    file: "/.gitlab-ci-template.yml"
+
+# These variables are available for all stages
+variables:
+  APP_MIGRATE_COMMAND: /app/.prod/on_deploy.sh
+  SERVICE_PORT: "5000"
+
+# Build stage must be included and it must extend .build.
+build:
+  extends: .build
+  only:
+    changes:
+      - "endpoint/**/*"
+  variables:
+    DOCKER_BUILD_SOURCE: ./endpoint/Dockerfile
+    DOCKER_BUILD_CONTEXT: ./endpoint
+
+review:
+  only:
+    changes:
+      - "endpoint/**/*"
+  # These variables are available only for review env and are merged with the general variables defined above.
+  variables:
+    DOCKER_BUILD_SOURCE: ./endpoint/Dockerfile
+    DOCKER_BUILD_CONTEXT: ./endpoint
+    K8S_SECRET_FLASK_DEBUG: 1
+
+staging:
+  # By default the staging environment is created from the master-branch.
+  # Here we define that it should be created from the branch called "develop" instead.
+  only:
+    refs:
+      - develop
+    changes:
+      - "endpoint/**/*"
+  # These variables are available only for staging env and are merged with the general variables defined above.
+  variables:
+    DOCKER_BUILD_SOURCE: ./endpoint/Dockerfile
+    DOCKER_BUILD_CONTEXT: ./endpoint
+
+test-codeanalysis:
+  # Tests should be run in the "test" stage.
+  stage: test
+  # only:
+  #   refs:
+  #     - develop
+  # Pipeline will use official python image
+  # when running the tests.
+  image: python:3.8
+  only:
+    changes:
+      - "endpoint/**/*"
+  variables:
+    DEBUG: 1
+  # Place here the tests commands
+  script:
+    - apt-get update
+    - apt-get install -y gdal-bin libxmlsec1-dev
+    - cd endpoint
+    - pip install -U pip
+    - pip install -r requirements.txt -r requirements-dev.txt
+    - flake8
+    - py.test -ra -vvv --cov
+    - isort -c .
