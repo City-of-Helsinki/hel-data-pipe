@@ -35,6 +35,10 @@ COPY --chown=appuser:appuser requirements-dev.txt /app/requirements-dev.txt
 RUN pip install --no-cache-dir -r /app/requirements-dev.txt \
     && pip install --no-cache-dir pip-tools
 
+# install Let's encrypt root certificate
+COPY letsencrypt-root.pem /app/letsencrypt-root.pem
+RUN cat /app/letsencrypt-root.pem >> /usr/local/lib/python3.7/site-packages/certifi/cacert.pem
+
 ENV DEV_SERVER=1
 
 COPY --chown=appuser:appuser . /app/
