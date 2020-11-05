@@ -24,7 +24,7 @@ def healthz():
 
 
 producer = KafkaProducer(
-    bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS').split(','),
+    bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS', '').split(','),
     security_protocol=os.getenv('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
     ssl_cafile=certifi.where(),
     sasl_mechanism=os.getenv('KAFKA_SASL_MECHANISM'),
