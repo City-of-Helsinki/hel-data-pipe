@@ -23,14 +23,18 @@ def healthz():
     return "OK"
 
 
-producer = KafkaProducer(
-    bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS', '').split(','),
-    security_protocol=os.getenv('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
-    ssl_cafile=certifi.where(),
-    sasl_mechanism=os.getenv('KAFKA_SASL_MECHANISM'),
-    sasl_plain_username=os.getenv('KAFKA_USERNAME'),
-    sasl_plain_password=os.getenv('KAFKA_PASSWORD')
-)
+app.producer = None
+
+
+def get_kafka_producer():
+    return KafkaProducer(
+        bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS', '').split(','),
+        security_protocol=os.getenv('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
+        ssl_cafile=certifi.where(),
+        sasl_mechanism=os.getenv('KAFKA_SASL_MECHANISM'),
+        sasl_plain_username=os.getenv('KAFKA_USERNAME'),
+        sasl_plain_password=os.getenv('KAFKA_PASSWORD')
+    )
 
 
 # Wild-card catch-all handler
@@ -47,10 +51,16 @@ def catchall(path: str):
     :param path: request path
     :return:
     """
+    # Allow testing using root path
+    if path == '':
+        return 'Test OK', 200
     endpoint_path = os.getenv('ENDPOINT_PATH')
+    # Reject requests not matching the one defined in env
     if endpoint_path != path:
         print(f'{endpoint_path} did not match {path}. Rejecting this request.')
         abort(404, description="Resource not found")
+    if app.producer is None:
+        app.producer = get_kafka_producer()
     # TODO: Validate request here
     # - from allowed IP address?
     # - request contains valid token or similar?
@@ -61,8 +71,8 @@ def catchall(path: str):
         return f'Request body too large (>{body_max_size}B)', 400
     topic_name = os.getenv('KAFKA_RAW_DATA_TOPIC_NAME')
     print(f'Sending stuff to {topic_name}')
-    producer.send(topic_name, value=data_pack(data))
-    return 'OK'
+    app.producer.send(topic_name, value=data_pack(data))
+    return 'OK', 200
 
 
 if __name__ == "__main__":
