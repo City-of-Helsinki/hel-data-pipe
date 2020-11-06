@@ -68,28 +68,27 @@ staging-endpoint:
     QA_ENVIRONMENT_URL: endpoint.heldatapipe.test.kuva.hel.ninja
     K8S_STAGING_ENVIRONMENT_URL: https://endpoint.heldatapipe.test.kuva.hel.ninja
     ENVIRONMENT_SLUG: "qa-staging-endpoint"
-# test-codeanalysis:
-#   # Tests should be run in the "test" stage.
-#   stage: test
-#   # only:
-#   #   refs:
-#   #     - develop
-#   # Pipeline will use official python image
-#   # when running the tests.
-#   image: python:3.8
-#   only:
-#     changes:
-#       - "endpoint/**/*"
-#   variables:
-#     DOCKER_IMAGE_NAME: persister
-#     DEBUG: 1
-#   # Place here the tests commands
-#   script:
-#     - apt-get update
-#     - apt-get install -y gdal-bin libxmlsec1-dev
-#     - cd endpoint
-#     - pip install -U pip
-#     - pip install -r requirements.txt -r requirements-dev.txt
-#     - flake8
-#     - py.test -ra -vvv --cov
-#     - isort -c .
+
+test-codeanalysis:
+  # Tests should be run in the "test" stage.
+  stage: test
+  only:
+    refs:
+      - develop
+      - external_pull_requests
+    changes:
+      - "endpoint/**/*"
+  image: python:3.8
+  variables:
+    DOCKER_IMAGE_NAME: persister
+    DEBUG: 1
+  # Place here the tests commands
+  script:
+    - apt-get update
+    - apt-get install -y gdal-bin libxmlsec1-dev
+    - cd endpoint
+    - pip install -U pip
+    - pip install -r requirements.txt -r requirements-dev.txt
+    - flake8
+    - py.test -ra -vvv --cov
+    - isort -c .
