@@ -60,8 +60,6 @@ staging-persister:
   environment:
     name: qa/staging
     url: https://persister.heldatapipe.test.kuva.hel.ninja
-    kubernetes:
-      namespace: persister-hel-data-pipe-qa
   variables:
     DOCKER_BUILD_SOURCE: ./persister/Dockerfile
     DOCKER_BUILD_CONTEXT: ./persister
