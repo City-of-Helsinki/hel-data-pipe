@@ -49,6 +49,8 @@ stop_review-persister:
 
 staging-persister:
   extends: .staging
+  script:
+    - devops deploy_application --track staging-persister
   # By default the staging environment is created from the master-branch.
   # Here we define that it should be created from the branch called "develop" instead.
   only:
@@ -67,3 +69,4 @@ staging-persister:
     SERVICE_PORT: "8080"
     QA_ENVIRONMENT_URL: persister.heldatapipe.test.kuva.hel.ninja
     K8S_STAGING_ENVIRONMENT_URL: https://persister.heldatapipe.test.kuva.hel.ninja
+    ENVIRONMENT_SLUG: "qa-staging-endpoint"
