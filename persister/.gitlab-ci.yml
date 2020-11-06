@@ -1,0 +1,71 @@
+# These variables are available for all stages
+variables:
+  APP_MIGRATE_COMMAND: /app/.prod/on_deploy.sh
+  K8S_SECRET_ALLOWED_HOSTS: "*"
+
+  # Build stage must be included and it must extend .build.
+build-persister:
+  extends: .build
+  only:
+    changes:
+      - "persister/**/*"
+  variables:
+    DOCKER_BUILD_SOURCE: ./persister/Dockerfile
+    DOCKER_BUILD_CONTEXT: ./persister
+    DOCKER_IMAGE_NAME: persister
+    SERVICE_PORT: "8080"
+
+review-persister:
+  extends: .review
+  only:
+    changes:
+      - "persister/**/*"
+  # These variables are available only for review env and are merged with the general variables defined above.
+  environment:
+    name: qa/r/persister/${CI_COMMIT_REF_SLUG}
+    url: https://persister-$TF_PROJECT_NAME_SLUG-$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
+    on_stop: stop_review-persister
+  variables:
+    DOCKER_BUILD_SOURCE: ./persister/Dockerfile
+    DOCKER_BUILD_CONTEXT: ./persister
+    DOCKER_IMAGE_NAME: persister
+    SERVICE_PORT: "8080"
+    POSTGRES_ENABLED: 0
+
+.review-cleanup-persister:
+  extends: .review-cleanup
+  environment:
+    name: qa/r/persister/${CI_COMMIT_REF_SLUG}
+
+cleanup_review-persister:
+  extends: .review-cleanup-persister
+  allow_failure: false
+  when: on_failure
+
+stop_review-persister:
+  extends: .review-cleanup-persister
+  allow_failure: true
+  when: manual
+
+staging-persister:
+  extends: .staging
+  # By default the staging environment is created from the master-branch.
+  # Here we define that it should be created from the branch called "develop" instead.
+  only:
+    refs:
+      - develop
+    changes:
+      - "persister/**/*"
+  # These variables are available only for staging env and are merged with the general variables defined above.
+  environment:
+    name: qa/staging
+    url: https://persister.heldatapipe.test.kuva.hel.ninja
+    kubernetes:
+      namespace: persister-hel-data-pipe-qa
+  variables:
+    DOCKER_BUILD_SOURCE: ./persister/Dockerfile
+    DOCKER_BUILD_CONTEXT: ./persister
+    DOCKER_IMAGE_NAME: persister
+    SERVICE_PORT: "8080"
+    QA_ENVIRONMENT_URL: persister.heldatapipe.test.kuva.hel.ninja
+    K8S_STAGING_ENVIRONMENT_URL: https://persister.heldatapipe.test.kuva.hel.ninja
