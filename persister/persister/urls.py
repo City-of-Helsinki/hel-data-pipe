@@ -29,8 +29,13 @@ def readiness(*args, **kwargs):
     return HttpResponse(status=200)
 
 
+def test(*args, **kwargs):
+    return HttpResponse("It works")
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("healthz", healthz),
     path("readiness", readiness),
+    path("test", test),
 ]
