@@ -47,6 +47,8 @@ stop_review-endpoint:
 
 staging-endpoint:
   extends: .staging
+  script:
+    - devops deploy_application --track staging-endpoint
   # By default the staging environment is created from the master-branch.
   # Here we define that it should be created from the branch called "develop" instead.
   only:
