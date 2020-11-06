@@ -47,6 +47,8 @@ stop_review-endpoint:
 
 staging-endpoint:
   extends: .staging
+  script:
+    - devops deploy_application --track staging-endpoint
   # By default the staging environment is created from the master-branch.
   # Here we define that it should be created from the branch called "develop" instead.
   only:
@@ -65,6 +67,7 @@ staging-endpoint:
     SERVICE_PORT: "5000"
     QA_ENVIRONMENT_URL: endpoint.heldatapipe.test.kuva.hel.ninja
     K8S_STAGING_ENVIRONMENT_URL: https://endpoint.heldatapipe.test.kuva.hel.ninja
+    ENVIRONMENT_SLUG: "qa-staging-endpoint"
 # test-codeanalysis:
 #   # Tests should be run in the "test" stage.
 #   stage: test
