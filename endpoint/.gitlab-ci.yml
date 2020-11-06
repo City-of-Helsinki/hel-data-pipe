@@ -55,11 +55,16 @@ staging-endpoint:
     changes:
       - "endpoint/**/*"
   # These variables are available only for staging env and are merged with the general variables defined above.
+  environment:
+    name: qa/staging
+    url: https://endpoint.heldatapipe.test.kuva.hel.ninja
   variables:
     DOCKER_BUILD_SOURCE: ./endpoint/Dockerfile
     DOCKER_BUILD_CONTEXT: ./endpoint
     DOCKER_IMAGE_NAME: endpoint
     SERVICE_PORT: "5000"
+    QA_ENVIRONMENT_URL: endpoint.heldatapipe.test.kuva.hel.ninja
+    K8S_STAGING_ENVIRONMENT_URL: https://endpoint.heldatapipe.test.kuva.hel.ninja
 # test-codeanalysis:
 #   # Tests should be run in the "test" stage.
 #   stage: test
