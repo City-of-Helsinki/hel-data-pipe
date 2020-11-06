@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def testing():
-    return "Testing"
+    return "It works"
 
 
 @app.route("/readiness")
