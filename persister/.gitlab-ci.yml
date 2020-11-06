@@ -57,6 +57,9 @@ staging-persister:
     changes:
       - "persister/**/*"
   # These variables are available only for staging env and are merged with the general variables defined above.
+  environment:
+    name: qa/staging
+    url: https://persister.heldatapipe.test.kuva.hel.ninja
   variables:
     DOCKER_BUILD_SOURCE: ./persister/Dockerfile
     DOCKER_BUILD_CONTEXT: ./persister

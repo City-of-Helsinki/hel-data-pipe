@@ -55,6 +55,9 @@ staging-endpoint:
     changes:
       - "endpoint/**/*"
   # These variables are available only for staging env and are merged with the general variables defined above.
+  environment:
+    name: qa/staging
+    url: https://endpoint.heldatapipe.test.kuva.hel.ninja
   variables:
     DOCKER_BUILD_SOURCE: ./endpoint/Dockerfile
     DOCKER_BUILD_CONTEXT: ./endpoint
