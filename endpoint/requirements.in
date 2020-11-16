@@ -1,1 +1,4 @@
 Flask==1.1.2
+certifi
+git+https://github.com/ForumViriumHelsinki/FVHIoT-python.git#egg=fvhiot
+python-dateutil
