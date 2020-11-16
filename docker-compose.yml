@@ -15,3 +15,12 @@ services:
     restart: always
     volumes:
       - ./endpoint:/app
+  persister:
+    build:
+      context: ./persister
+      target: development
+    ports:
+      - "8080:8080"
+    restart: always
+    volumes:
+      - ./persister:/app
