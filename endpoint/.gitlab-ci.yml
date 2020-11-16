@@ -1,15 +1,9 @@
-include:
-  - project: "city-of-helsinki/kuva/ci-cd-config/ci-configuration"
-    ref: v2
-    file: "/.gitlab-ci-template.yml"
-
 # These variables are available for all stages
 variables:
   APP_MIGRATE_COMMAND: /app/.prod/on_deploy.sh
-  SERVICE_PORT: "5000"
 
 # Build stage must be included and it must extend .build.
-build:
+build-endpoint:
   extends: .build
   only:
     changes:
@@ -17,18 +11,44 @@ build:
   variables:
     DOCKER_BUILD_SOURCE: ./endpoint/Dockerfile
     DOCKER_BUILD_CONTEXT: ./endpoint
+    DOCKER_IMAGE_NAME: endpoint
 
-review:
+review-endpoint:
+  extends: .review
   only:
     changes:
       - "endpoint/**/*"
   # These variables are available only for review env and are merged with the general variables defined above.
+  environment:
+    name: qa/r/endpoint/${CI_COMMIT_REF_SLUG}
+    url: https://endpoint-$TF_PROJECT_NAME_SLUG-$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
+    on_stop: stop_review-endpoint
   variables:
     DOCKER_BUILD_SOURCE: ./endpoint/Dockerfile
     DOCKER_BUILD_CONTEXT: ./endpoint
-    K8S_SECRET_FLASK_DEBUG: 1
+    DOCKER_IMAGE_NAME: endpoint
+    SERVICE_PORT: "5000"
+    POSTGRES_ENABLED: 0
 
-staging:
+.review-cleanup-endpoint:
+  extends: .review-cleanup
+  environment:
+    name: qa/r/endpoint/${CI_COMMIT_REF_SLUG}
+
+cleanup_review-endpoint:
+  extends: .review-cleanup-endpoint
+  allow_failure: false
+  when: on_failure
+
+stop_review-endpoint:
+  extends: .review-cleanup-endpoint
+  allow_failure: true
+  when: manual
+
+staging-endpoint:
+  extends: .staging
+  script:
+    - devops deploy_application --track staging-endpoint
   # By default the staging environment is created from the master-branch.
   # Here we define that it should be created from the branch called "develop" instead.
   only:
@@ -37,23 +57,30 @@ staging:
     changes:
       - "endpoint/**/*"
   # These variables are available only for staging env and are merged with the general variables defined above.
+  environment:
+    name: qa/staging
+    url: https://endpoint.heldatapipe.test.kuva.hel.ninja
   variables:
     DOCKER_BUILD_SOURCE: ./endpoint/Dockerfile
     DOCKER_BUILD_CONTEXT: ./endpoint
+    DOCKER_IMAGE_NAME: endpoint
+    SERVICE_PORT: "5000"
+    QA_ENVIRONMENT_URL: endpoint.heldatapipe.test.kuva.hel.ninja
+    K8S_STAGING_ENVIRONMENT_URL: https://endpoint.heldatapipe.test.kuva.hel.ninja
+    ENVIRONMENT_SLUG: "qa-staging-endpoint"
 
 test-codeanalysis:
   # Tests should be run in the "test" stage.
   stage: test
-  # only:
-  #   refs:
-  #     - develop
-  # Pipeline will use official python image
-  # when running the tests.
-  image: python:3.8
   only:
+    refs:
+      - develop
+      - external_pull_requests
     changes:
       - "endpoint/**/*"
+  image: python:3.8
   variables:
+    DOCKER_IMAGE_NAME: persister
     DEBUG: 1
   # Place here the tests commands
   script:
