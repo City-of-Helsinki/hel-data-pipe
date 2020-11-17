@@ -15,6 +15,14 @@ services:
     restart: always
     volumes:
       - ./endpoint:/app
+  parser:
+    <<: *base
+    build:
+      context: ./parser
+      target: development
+    restart: always
+    volumes:
+      - ./parser:/app
   persister:
     build:
       context: ./persister
