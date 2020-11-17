@@ -1,0 +1,71 @@
+# These variables are available for all stages
+variables:
+  APP_MIGRATE_COMMAND: /app/.prod/on_deploy.sh
+
+  # Build stage must be included and it must extend .build.
+build-parser:
+  extends: .build
+  only:
+    changes:
+      - "parser/**/*"
+  variables:
+    DOCKER_BUILD_SOURCE: ./parser/Dockerfile
+    DOCKER_BUILD_CONTEXT: ./parser
+    DOCKER_IMAGE_NAME: parser
+#    SERVICE_PORT: "8080"
+
+review-parser:
+  extends: .review
+  only:
+    changes:
+      - "parser/**/*"
+  # These variables are available only for review env and are merged with the general variables defined above.
+  environment:
+    name: qa/r/parser/${CI_COMMIT_REF_SLUG}
+    url: https://parser-$TF_PROJECT_NAME_SLUG-$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
+    on_stop: stop_review-parser
+  variables:
+    DOCKER_BUILD_SOURCE: ./parser/Dockerfile
+    DOCKER_BUILD_CONTEXT: ./parser
+    DOCKER_IMAGE_NAME: parser
+#    SERVICE_PORT: "8080"
+    POSTGRES_ENABLED: 0
+
+.review-cleanup-parser:
+  extends: .review-cleanup
+  environment:
+    name: qa/r/parser/${CI_COMMIT_REF_SLUG}
+
+cleanup_review-parser:
+  extends: .review-cleanup-parser
+  allow_failure: false
+  when: on_failure
+
+stop_review-parser:
+  extends: .review-cleanup-parser
+  allow_failure: true
+  when: manual
+
+staging-parser:
+  extends: .staging
+  script:
+    - devops deploy_application --track staging-parser
+  # By default the staging environment is created from the master-branch.
+  # Here we define that it should be created from the branch called "develop" instead.
+  only:
+    refs:
+      - develop
+    changes:
+      - "parser/**/*"
+  # These variables are available only for staging env and are merged with the general variables defined above.
+  environment:
+    name: qa/staging
+#    url: https://parser.heldatapipe.test.kuva.hel.ninja
+  variables:
+    DOCKER_BUILD_SOURCE: ./parser/Dockerfile
+    DOCKER_BUILD_CONTEXT: ./parser
+    DOCKER_IMAGE_NAME: parser
+#    SERVICE_PORT: "8080"
+#    QA_ENVIRONMENT_URL: parser.heldatapipe.test.kuva.hel.ninja
+#    K8S_STAGING_ENVIRONMENT_URL: https://parser.heldatapipe.test.kuva.hel.ninja
+    ENVIRONMENT_SLUG: "qa-staging-parser"
