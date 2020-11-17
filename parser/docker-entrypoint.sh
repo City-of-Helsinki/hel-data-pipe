@@ -16,8 +16,6 @@ set -e
 # Start server
 if [[ ! -z "$@" ]]; then
     "$@"
-elif [[ "$DEV_SERVER" = "1" ]]; then
-    python3 app.py
 else
     python3 app.py
 fi

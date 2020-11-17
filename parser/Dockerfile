@@ -45,8 +45,6 @@ COPY --chown=appuser:appuser . /app/
 
 USER appuser
 
-EXPOSE 5000/tcp
-
 # ==============================
 FROM appbase as production
 # ==============================
@@ -57,5 +55,3 @@ RUN pip install --no-cache-dir -r /app/requirements-prod.txt
 COPY --chown=appuser:appuser . /app/
 
 USER appuser
-
-EXPOSE 5000/tcp
