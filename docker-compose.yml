@@ -41,8 +41,8 @@ services:
     volumes:
       - ./persister/:/app/
 
-  # uncomment to run Kafka & Zookeeper via docker-compose
-  #
+  # uncomment to run PostgreSQL, Kafka & Zookeeper via docker-compose
+
   # zookeeper:
   #   image: wurstmeister/zookeeper
   #   ports:
@@ -60,3 +60,12 @@ services:
   #     KAFKA_CREATE_TOPICS: "${KAFKA_RAW_DATA_TOPIC_NAME}:1:1,${KAFKA_PARSED_DATA_TOPIC_NAME}:1:1"
   #   volumes:
   #     - /var/run/docker.sock:/var/run/docker.sock
+  # db:
+  #   <<: *base
+  #   image: binakot/postgresql-postgis-timescaledb
+  #   ports:
+  #     - "5432"
+  #   volumes:
+  #     - db-data:/pgdata
+# volumes:
+#   db-data:
