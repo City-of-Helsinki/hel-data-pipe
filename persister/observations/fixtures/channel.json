@@ -1,0 +1,15 @@
+[
+  {
+    "pk": 1,
+    "fields": {
+      "datasource": 1,
+      "quantity": 1,
+      "uniquename": "temp_out1",
+      "name": "Water Temperature",
+      "comment": "Temperature of the water",
+      "updated_at": "2020-11-18T11:26:46.021Z",
+      "created_at": "2020-11-18T11:22:14.877Z"
+    },
+    "model": "observations.channel"
+  }
+]
