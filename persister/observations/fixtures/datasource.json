@@ -1,0 +1,16 @@
+[
+  {
+    "pk": 1,
+    "fields": {
+      "datasourcetype": 1,
+      "devid": "70B3D57050005037",
+      "name": "Device 1",
+      "description": "This is a device 1",
+      "lat": "-79.97545",
+      "lon": "-143.47672",
+      "updated_at": "2020-11-18T11:26:46.021Z",
+      "created_at": "2020-11-18T11:22:14.877Z"
+    },
+    "model": "observations.datasource"
+  }
+]

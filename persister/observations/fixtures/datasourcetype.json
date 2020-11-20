@@ -1,0 +1,13 @@
+[
+  {
+    "pk": 1,
+    "fields": {
+      "name": "Digital Matter Sensornode LoRaWAN",
+      "description": "This is a description",
+      "parser": "sensornode",
+      "updated_at": "2020-11-18T11:26:46.021Z",
+      "created_at": "2020-11-18T11:22:14.877Z"
+    },
+    "model": "observations.datasourcetype"
+  }
+]

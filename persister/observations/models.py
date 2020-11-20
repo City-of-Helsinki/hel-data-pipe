@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -16,8 +16,8 @@ class Datasourcetype(models.Model):
     parser = models.CharField(
         max_length=100, blank=True, editable=True, verbose_name=_("Parser")
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    updated_at = models.DateTimeField(null=False, blank=False, auto_now=True)
 
     def __str__(self):
         return "{} ({})".format(self.name, self.parser)
@@ -28,8 +28,11 @@ class Datasource(models.Model):
     A Datasource is an object, which has unique device id
     """
 
-    datalogger = models.ForeignKey(
-        Datasourcetype, related_name="datasource", on_delete=models.CASCADE
+    datasourcetype = models.ForeignKey(
+        Datasourcetype,
+        related_name="datasources",
+        default=None,
+        on_delete=models.CASCADE,
     )
     devid = models.CharField(max_length=40, unique=True, db_index=True)
     name = models.CharField(
@@ -79,11 +82,11 @@ class Quantity(models.Model):
 
 class Channel(models.Model):
     """
-    All Dataloggers have one or more data channels.
+    All Datasources have one or more data channels.
     All Values are related to one Channel
     """
 
-    datalogger = models.ForeignKey(
+    datasource = models.ForeignKey(
         Datasource, related_name="channels", on_delete=models.CASCADE
     )
     quantity = models.ForeignKey(
@@ -106,7 +109,7 @@ class Channel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return " | ".join([self.datalogger.name, self.name, self.uniquename])
+        return " | ".join([self.datasource.name, self.name, self.uniquename])
 
 
 class Value(models.Model):
@@ -115,9 +118,41 @@ class Value(models.Model):
     """
 
     time = models.DateTimeField(db_index=True)
-    unit = models.ForeignKey(Channel, related_name="values", on_delete=models.CASCADE)
+    channel = models.ForeignKey(
+        Channel, related_name="values", default=None, on_delete=models.CASCADE
+    )
     value = models.FloatField()
     valid = models.BooleanField(default=True, verbose_name=_("Valid"))
 
     def __str__(self):
         return "{} {:.3f}".format(self.time, self.value)
+
+
+def save_measurement(datasource, key, measurement, time):
+    try:
+        # save only measurements with valid channel for the datasource
+        channel = datasource.channels.get(uniquename=key)
+        print(f"Creating value {measurement[key]} to channel {channel.name}")
+        Value.objects.create(channel=channel, time=time, value=measurement[key])
+    except Channel.DoesNotExist:
+        print(f"No channel found for {key}, skipping")
+
+
+@transaction.atomic
+def save_data(message):
+    # get the data source type and data source
+    datasourcetype = Datasourcetype.objects.get(name=message["meta"]["dev-type"])
+    datasource = datasourcetype.datasources.get(devid=message["meta"]["dev-id"])
+    for data in message["data"]:
+        time = None
+        for items in data:
+            if "time" in items:
+                # read the time entry for the measurements
+                print("Reading time for the measurements")
+                time = items["time"]
+            elif "measurement" in items:
+                # save all the measurements
+                print("Reading measurements")
+                measurement = items["measurement"]
+                for key in measurement:
+                    save_measurement(datasource, key, measurement, time)

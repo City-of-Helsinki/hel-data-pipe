@@ -1,8 +1,9 @@
 import os
 
 from django.core.management.base import BaseCommand
-from kafka import KafkaConsumer
 from fvhiot.utils.data import data_unpack
+from kafka import KafkaConsumer
+from observations.models import save_data
 
 
 class Command(BaseCommand):
@@ -15,13 +16,4 @@ class Command(BaseCommand):
         )
         print(f"Listening to topic {parsed_data_topic}")
         for message in consumer:
-            print(f"{message.topic}: {data_unpack(message.value)}")
-
-            # TODO: Example how we could actually save the data when models
-            #       are present
-
-            # serializer = ObservationSerializer(
-            #     data=json.loads(msg.value.decode())["data"]
-            # )
-            # serializer.is_valid()
-            # serializer.save()
+            save_data(data_unpack(message.value))

@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from observations.models import Channel, Datasource, Datasourcetype, Quantity, Value
 
 
@@ -21,49 +20,24 @@ created_iso.short_description = "Created at"
 
 
 class DatasourcetypeAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        created_iso,
-    )
+    list_display = ("name", created_iso)
 
 
 class DatasourceAdmin(admin.ModelAdmin):
-    list_display = (
-        "devid",
-        "name",
-        created_iso,
-    )
+    list_display = ("devid", "name", created_iso)
 
 
 class QuantityAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "symbol",
-        "description",
-        created_iso,
-    )
+    list_display = ("name", "symbol", "description", created_iso)
 
 
 class ChannelAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "uniquename",
-        "quantity",
-        "datalogger",
-        created_iso,
-    )
+    list_display = ("name", "uniquename", "quantity", "datasource", created_iso)
 
 
 class ValueAdmin(admin.ModelAdmin):
-    list_display = (
-        timestamp,
-        "unit",
-        "value",
-    )
-    list_filter = (
-        "unit",
-        "value",
-    )
+    list_display = (timestamp, "channel", "value")
+    list_filter = ("channel", "value")
 
 
 admin.site.register(Datasourcetype, DatasourcetypeAdmin)
