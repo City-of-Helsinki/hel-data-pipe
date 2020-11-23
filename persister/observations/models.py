@@ -146,8 +146,15 @@ def save_measurement(datasource, key, measurement, time):
 @transaction.atomic
 def save_data(message):
     # get the data source type and data source
+    devid = message["meta"]["dev-id"]
     datasourcetype = Datasourcetype.objects.get(name=message["meta"]["dev-type"])
-    datasource = datasourcetype.datasources.get(devid=message["meta"]["dev-id"])
+    try:
+        datasource = datasourcetype.datasources.get(devid=devid)
+    except Datasource.DoesNotExist:
+        print(f"Creating new datasource {devid}")
+        datasource = Datasource(devid=devid, datasourcetype=datasourcetype)
+        datasource.save()
+        print("Created new datasource")
     for data in message["data"]:
         time = None
         for items in data:
