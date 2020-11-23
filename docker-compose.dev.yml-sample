@@ -34,6 +34,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
   db:
     image: binakot/postgresql-postgis-timescaledb
+    environment:
+      POSTGRES_DB: $POSTGRES_DB
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
     ports:
       - "5432"
     volumes:
