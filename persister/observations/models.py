@@ -100,7 +100,7 @@ class Channel(models.Model):
         max_length=64, blank=True, verbose_name=_("Unique name for unit")
     )  # e.g. "temp_1"
     name = models.CharField(
-        max_length=64, blank=True, verbose_name=_("Name")
+        max_length=64, null=True, blank=True, verbose_name=_("Name")
     )  # e.g. "Temperature"
     comment = models.CharField(
         max_length=256, blank=True, verbose_name=_("Comment")
@@ -109,7 +109,10 @@ class Channel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return " | ".join([self.datasource.name, self.name, self.uniquename])
+        try:
+            return " | ".join([self.datasource.name, self.name, self.uniquename])
+        except Exception:
+            return f"Channel {self.pk}"
 
 
 class Value(models.Model):
@@ -130,12 +133,14 @@ class Value(models.Model):
 
 def save_measurement(datasource, key, measurement, time):
     try:
-        # save only measurements with valid channel for the datasource
         channel = datasource.channels.get(uniquename=key)
-        print(f"Creating value {measurement[key]} to channel {channel.name}")
-        Value.objects.create(channel=channel, time=time, value=measurement[key])
     except Channel.DoesNotExist:
-        print(f"No channel found for {key}, skipping")
+        print(
+            f"Channel {key} not found for datasource {datasource.name}, creating channel {key}"
+        )
+        channel = Channel.objects.create(datasource=datasource, uniquename=key)
+    print(f"Creating value {measurement[key]} to channel {channel.uniquename}")
+    Value.objects.create(channel=channel, time=time, value=measurement[key])
 
 
 @transaction.atomic

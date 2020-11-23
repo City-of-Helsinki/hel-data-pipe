@@ -33,6 +33,7 @@ class QuantityAdmin(admin.ModelAdmin):
 
 class ChannelAdmin(admin.ModelAdmin):
     list_display = ("name", "uniquename", "quantity", "datasource", created_iso)
+    empty_value_display = "---"
 
 
 class ValueAdmin(admin.ModelAdmin):
