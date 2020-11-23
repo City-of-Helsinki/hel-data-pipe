@@ -1,3 +1,4 @@
+import certifi
 import os
 
 from django.core.management.base import BaseCommand
@@ -12,7 +13,12 @@ class Command(BaseCommand):
         parsed_data_topic = os.environ.get("KAFKA_PARSED_DATA_TOPIC_NAME")
         consumer = KafkaConsumer(
             parsed_data_topic,
-            bootstrap_servers=os.environ.get("KAFKA_BOOTSTRAP_SERVERS"),
+            bootstrap_servers=os.environ["KAFKA_BOOTSTRAP_SERVERS"].split(","),
+            security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
+            ssl_cafile=certifi.where(),
+            sasl_mechanism=os.getenv("KAFKA_SASL_MECHANISM"),
+            sasl_plain_username=os.getenv("KAFKA_USERNAME"),
+            sasl_plain_password=os.getenv("KAFKA_PASSWORD"),
         )
         print(f"Listening to topic {parsed_data_topic}")
         for message in consumer:
