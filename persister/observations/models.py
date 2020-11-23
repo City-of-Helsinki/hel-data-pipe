@@ -152,7 +152,7 @@ def save_data(message):
         datasource = datasourcetype.datasources.get(devid=devid)
     except Datasource.DoesNotExist:
         print(f"Creating new datasource {devid}")
-        datasource = Datasource(devid=message["meta"]["dev-id"], datasourcetype=datasourcetype)
+        datasource = Datasource(devid=devid, datasourcetype=datasourcetype)
         datasource.save()
         print("Created new datasource")
     for data in message["data"]:
