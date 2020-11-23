@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.http import HttpResponse
-from django.urls import path
+from django.urls import include, path
 
 
 #
@@ -29,13 +29,9 @@ def readiness(*args, **kwargs):
     return HttpResponse(status=200)
 
 
-def test(*args, **kwargs):
-    return HttpResponse("It works")
-
-
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", include("observations.urls")),
     path("healthz", healthz),
     path("readiness", readiness),
-    path("test", test),
 ]
