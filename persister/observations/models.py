@@ -97,16 +97,21 @@ class Channel(models.Model):
         on_delete=models.SET_NULL,
     )
     uniquename = models.CharField(
-        max_length=64, blank=True, verbose_name=_("Unique name for unit")
+        max_length=64, verbose_name=_("Unique name for unit")
     )  # e.g. "temp_1"
     name = models.CharField(
-        max_length=64, null=True, blank=True, verbose_name=_("Name")
+        max_length=64, blank=True, verbose_name=_("Name")
     )  # e.g. "Temperature"
     comment = models.CharField(
         max_length=256, blank=True, verbose_name=_("Comment")
     )  # e.g. "water"
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self._state.adding and not self.name:
+            self.name = self.uniquename
+        super().save(*args, **kwargs)
 
     def __str__(self):
         try:
