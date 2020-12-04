@@ -3,7 +3,7 @@ import pytest
 from app import app as flask_app
 
 
-class KafkaMockProducer(object):
+class KafkaMockProducer:
     """A mock Kafka client implementing just send() method."""
 
     def __init__(self, **configs):

@@ -1,14 +1,14 @@
-import certifi
 import os
 
+import certifi
 from django.core.management.base import BaseCommand
 from fvhiot.utils.data import data_unpack
 from kafka import KafkaConsumer
+
 from observations.models import save_data
 
 
 class Command(BaseCommand):
-
     def handle(self, *args, **options):
         parsed_data_topic = os.environ.get("KAFKA_PARSED_DATA_TOPIC_NAME")
         consumer = KafkaConsumer(
