@@ -1,0 +1,39 @@
+name: "parser"
+
+on:
+  push:
+    paths:
+      - "parser/**"
+      - ".github/workflows/parser.yaml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: python:3.7-buster
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Cache pip packages
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-pip-modules
+        with:
+          path: ~/.pip-cache
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install dependencies
+        working-directory: ./parser
+        run: |
+          pip install -r requirements.txt -r requirements-dev.txt codecov && \
+          apt-get update && apt-get install -y build-essential
+      - name: Run tests
+        working-directory: ./parser
+        run: pytest -ra -vv --doctest-modules --cov=.
+
+      - name: Coverage
+        working-directory: ./parser
+        run: codecov
