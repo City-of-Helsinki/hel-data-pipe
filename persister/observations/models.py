@@ -1,7 +1,5 @@
 from django.db import models, transaction
-from django.utils.translation import ugettext_lazy as _
-
-# UGH fdsakjkfasjdfk ladsjfkl dsajfklasdjf ladsfj asklfjadskl jfaslfj salkfajs dklfasjf kladsjfkl sjflkas
+from django.utils.translation import gettext_lazy as _
 
 
 class Datasourcetype(models.Model):
