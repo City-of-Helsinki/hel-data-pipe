@@ -1,6 +1,8 @@
 from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
 
+# UGH fdsakjkfasjdfk ladsjfkl dsajfklasdjf ladsfj asklfjadskl jfaslfj salkfajs dklfasjf kladsjfkl sjflkas
+
 
 class Datasourcetype(models.Model):
     """
@@ -20,7 +22,7 @@ class Datasourcetype(models.Model):
     updated_at = models.DateTimeField(null=False, blank=False, auto_now=True)
 
     def __str__(self):
-        return "{} ({})".format(self.name, self.parser)
+        return f"{self.name} ({self.parser})"
 
 
 class Datasource(models.Model):
@@ -51,7 +53,7 @@ class Datasource(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "{} {}".format(self.devid, self.name)
+        return f"{self.devid} {self.name}"
 
 
 class Quantity(models.Model):
@@ -74,7 +76,7 @@ class Quantity(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "{} [{}]".format(self.name, self.symbol)
+        return f"{self.name} [{self.symbol}]"
 
     class Meta:
         verbose_name_plural = "Quantities"
@@ -133,7 +135,7 @@ class Value(models.Model):
     valid = models.BooleanField(default=True, verbose_name=_("Valid"))
 
     def __str__(self):
-        return "{} {:.3f}".format(self.time, self.value)
+        return f"{self.time} {self.value:.3f}"
 
 
 def save_measurement(datasource, key, measurement, time):

@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('observations', '0003_rename_unit_to_channel'),
+        ("observations", "0003_rename_unit_to_channel"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='channel',
-            name='name',
-            field=models.CharField(blank=True, max_length=64, null=True, verbose_name='Name'),
+            model_name="channel",
+            name="name",
+            field=models.CharField(
+                blank=True, max_length=64, null=True, verbose_name="Name"
+            ),
         ),
     ]
