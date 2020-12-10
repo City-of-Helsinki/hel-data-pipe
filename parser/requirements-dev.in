@@ -6,4 +6,3 @@ isort
 pep8-naming
 pytest
 pytest-cov
-pytest-flask
