@@ -67,7 +67,7 @@ jobs:
           DOCKER_BUILD_CONTEXT: ./endpoint
           DOCKER_IMAGE_NAME: endpoint
           PROJECT_NAME: endpoint
-          SERVICE_PORT: "5000"
+          SERVICE_PORT: "5000" 
 
   review-parser:
     runs-on: ubuntu-latest
@@ -85,6 +85,9 @@ jobs:
           DOCKER_BUILD_SOURCE: ./parser/Dockerfile
           PROJECT_NAME: parser
           DOCKER_BUILD_CONTEXT: ./parser
+          K8S_SECRET_SKIP_KAFKA_CHECK: 1
+          K8S_LIVENESS_FILE: /app/ready.txt
+          K8S_READINESS_FILE: /app/ready.txt
 
   review-persister:
     runs-on: ubuntu-latest
@@ -110,4 +113,5 @@ jobs:
           DOCKER_BUILD_CONTEXT: ./persister
           PROJECT_NAME: persister
           SERVICE_PORT: "8080"
-
+          K8S_SECRET_SKIP_KAFKA_CHECK: 1
+          K8S_SECRET_ALLOWED_HOSTS: "*"
