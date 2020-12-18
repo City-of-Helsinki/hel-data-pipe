@@ -34,6 +34,8 @@ def create_meta(devid, timestamp, message, request_data):
 try:
     print("Booting up parser")
 
+    f = open("/app/ready.txt", "w")
+
     consumer = KafkaConsumer(
         os.environ["KAFKA_RAW_DATA_TOPIC_NAME"],
         bootstrap_servers=os.environ["KAFKA_BOOTSTRAP_SERVERS"].split(","),
