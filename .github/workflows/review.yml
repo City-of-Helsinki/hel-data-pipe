@@ -1,0 +1,51 @@
+name: Build & Staging
+on: [pull_request]
+
+env:
+  CONTAINER_REGISTRY: ghcr.io
+  CONTAINER_REGISTRY_USER: ${{ secrets.GHCR_CONTAINER_REGISTRY_USER }}
+  CONTAINER_REGISTRY_PASSWORD: ${{ secrets.GHCR_TOKEN }}
+  CONTAINER_REGISTRY_REPO: ghcr.io/city-of-helsinki/${{ github.event.repository.name }}
+  REPO_NAME: ${{ github.event.repository.name }}
+  KUBECONFIG_RAW: ${{ secrets.KUBECONFIG_RAW_STAGING }}
+  BUILD_ARTIFACT_FOLDER: 'build_artifacts'
+  SERVICE_ARTIFACT_FOLDER: 'service_artifacts'
+  APP_MIGRATE_COMMAND: /app/.prod/on_deploy.sh
+
+jobs:
+  build-endpoint:
+    runs-on: ubuntu-latest
+    name: Build Endpoint
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        uses: andersinno/kolga-build-action@v2
+        env:
+          DOCKER_BUILD_SOURCE: ./endpoint/Dockerfile
+          DOCKER_BUILD_CONTEXT: ./endpoint
+          DOCKER_IMAGE_NAME: endpoint
+
+  build-parser:
+    runs-on: ubuntu-latest
+    name: Build Parser
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        uses: andersinno/kolga-build-action@v2
+        env:
+          DOCKER_BUILD_SOURCE: ./parser/Dockerfile
+          DOCKER_BUILD_CONTEXT: ./parser
+          DOCKER_IMAGE_NAME: parser
+
+  build-persister:
+    runs-on: ubuntu-latest
+    name: Build Persister
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        uses: andersinno/kolga-build-action@v2
+        env:
+          DOCKER_BUILD_SOURCE: ./persister/Dockerfile
+          DOCKER_BUILD_CONTEXT: ./persister
+          DOCKER_IMAGE_NAME: persister
+          SERVICE_PORT: "8080"
