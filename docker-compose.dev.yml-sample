@@ -1,26 +1,36 @@
 version: "3.8"
+x-base: &base
+  env_file:
+    - ./.env.dev
+
 services:
   endpoint:
+    <<: *base
     depends_on:
       - zookeeper
       - kafka
   parser:
+    <<: *base
     depends_on:
       - zookeeper
       - kafka
   persister:
+    <<: *base
     depends_on:
       - zookeeper
       - kafka
       - db
   api:
+    <<: *base
     depends_on:
       - db
   zookeeper:
+    <<: *base
     image: wurstmeister/zookeeper
     ports:
       - "2181:2181"
   kafka:
+    <<: *base
     hostname: kafka
     image: wurstmeister/kafka
     ports:
@@ -33,10 +43,11 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
   db:
+    <<: *base
     image: binakot/postgresql-postgis-timescaledb
     environment:
-      POSTGRES_DB: $POSTGRES_DB
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_DB: $POSTGRES_DB
     ports:
       - "5432"
     volumes:
