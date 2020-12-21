@@ -4,6 +4,7 @@ import certifi
 from django.core.management.base import BaseCommand
 from fvhiot.utils.data import data_unpack
 from kafka import KafkaConsumer
+
 from observations.models import save_data
 
 
