@@ -40,7 +40,6 @@ try:
         os.environ["KAFKA_RAW_DATA_TOPIC_NAME"],
         bootstrap_servers=os.environ["KAFKA_BOOTSTRAP_SERVERS"].split(","),
         security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
-        ssl_check_hostname=False,
         ssl_cafile=certifi.where(),
         sasl_mechanism=os.getenv("KAFKA_SASL_MECHANISM"),
         sasl_plain_username=os.getenv("KAFKA_USERNAME"),
@@ -50,7 +49,6 @@ try:
     producer = KafkaProducer(
         bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS").split(","),
         security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
-        ssl_check_hostname=False,
         ssl_cafile=certifi.where(),
         sasl_mechanism=os.getenv("KAFKA_SASL_MECHANISM"),
         sasl_plain_username=os.getenv("KAFKA_USERNAME"),
