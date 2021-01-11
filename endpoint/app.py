@@ -30,10 +30,9 @@ def get_kafka_producer():
     return KafkaProducer(
         bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS", "").split(","),
         security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
-        ssl_cafile=certifi.where(),
-        sasl_mechanism=os.getenv("KAFKA_SASL_MECHANISM"),
-        sasl_plain_username=os.getenv("KAFKA_USERNAME"),
-        sasl_plain_password=os.getenv("KAFKA_PASSWORD"),
+        ssl_cafile=os.environ["KAFKA_CA_STAGING"],
+        ssl_certfile=os.environ["KAFKA_ACCESS_CERT_STAGING"],
+        ssl_keyfile=os.environ["KAFKA_ACCESS_KEY_STAGING"],
     )
 
 
