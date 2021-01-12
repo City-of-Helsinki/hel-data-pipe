@@ -40,22 +40,29 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [ 'endpoint', 'parser', 'persister']
+        service: [ 'endpoint', 'parser', 'api', 'persister']
         include:
           - service: 'parser'
+            dir: 'parser'
             K8S_LIVENESS_FILE: /app/ready.txt
             K8S_READINESS_FILE: /app/ready.txt
-            SERVICE_PORT: "8000" # Default port to allow deploy
             ENABLE_KAFKA: true
           - service: 'endpoint'
+            dir: 'endpoint'
             SERVICE_PORT: "5000"
             ENABLE_KAFKA: true
-          - service: 'persister'
+          - service: 'api'
+            dir: persister
             SERVICE_PORT: "8080"
             ENABLE_DB: true
+          - service: 'persister'
+            dir: persister
+            K8S_LIVENESS_FILE: /app/ready.txt
+            K8S_READINESS_FILE: /app/ready.txt
+            CONSUMER: 1
 
     runs-on: ubuntu-latest
-    name: Review ${{ matrix.service }}
+    name: Review ${{ matrix.dir }}
 
     steps:
       - uses: actions/checkout@v2
@@ -65,7 +72,7 @@ jobs:
         if: matrix.ENABLE_DB
         uses: andersinno/kolga-deploy-service-action@v2
         with:
-          projects: ${{ matrix.service }}
+          projects: ${{ matrix.dir }}
         env:
           POSTGRES_IMAGE: "docker.io/andersinnovations/postgis:11-bitnami"
 
@@ -89,24 +96,32 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
         if: matrix.ENABLE_KAFKA
 
-      - name: Disable variables
+      - name: Disable Kafka check
         if: matrix.ENABLE_KAFKA != true
         run: |
           echo "K8S_SECRET_SKIP_KAFKA_CHECK=1" >> $GITHUB_ENV
 
-      - name: Persister settings
-        if: matrix.service == 'persister'
+      - name: Service with ingress
+        if: matrix.SERVICE_PORT != ''
         run: |
-          echo "K8S_SECRET_ALLOWED_HOSTS=*" >> $GITHUB_ENV
+          echo "ENVIRONMENT_URL=https://${{ env.K8S_NAMESPACE }}-${{ matrix.dir }}.${{ env.BASE_DOMAIN }}" >> $GITHUB_ENV
 
-      - name: Deploy ${{ matrix.service }}
+      - name: File probes
+        if: matrix.SERVICE_PORT == ''
+        run: |
+          echo "K8S_LIVENESS_FILE=/app/ready.txt" >> $GITHUB_ENV
+          echo "K8S_READINESS_FILE=/app/ready.txt" >> $GITHUB_ENV
+
+      - name: Consumer settings
+        if: matrix.CONSUMER == 1
+        run: |
+          echo "K8S_SECRET_CONSUMER=1" >> $GITHUB_ENV
+
+      - name: Deploy ${{ matrix.dir }}
         uses: andersinno/kolga-deploy-action@v2
         env:
-          ENVIRONMENT_URL: https://${{ env.K8S_NAMESPACE }}-${{ matrix.service }}.${{ env.BASE_DOMAIN }}
-          DOCKER_BUILD_SOURCE: ./${{ matrix.service }}/Dockerfile
-          DOCKER_BUILD_CONTEXT: ./${{ matrix.service }}
-          DOCKER_IMAGE_NAME: ${{ matrix.service }}
-          PROJECT_NAME: ${{ matrix.service }}
-          SERVICE_PORT: ${{ matrix.SERVICE_PORT }}
-          K8S_LIVENESS_FILE: ${{ matrix.K8S_LIVENESS_FILE }}
-          K8S_READINESS_FILE: ${{ matrix.K8S_READINESS_FILE }}
+          DOCKER_BUILD_SOURCE: ./${{ matrix.dir }}/Dockerfile
+          DOCKER_BUILD_CONTEXT: ./${{ matrix.dir }}
+          DOCKER_IMAGE_NAME: ${{ matrix.dir }}
+          PROJECT_NAME: ${{ matrix.dir }}
+          K8S_SECRET_ALLOWED_HOSTS: "*"

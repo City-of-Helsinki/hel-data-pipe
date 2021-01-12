@@ -21,6 +21,8 @@ fi
 # Start server
 if [[ ! -z "$@" ]]; then
     "$@"
+elif [[ "$CONSUMER" = "1"]]; then
+    python ./manage.py consume_parsed_data
 elif [[ "$DEV_SERVER" = "1" ]]; then
     python ./manage.py runserver 0.0.0.0:8080
 else

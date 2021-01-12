@@ -20,5 +20,7 @@ class Command(BaseCommand):
             ssl_keyfile=os.environ["KAFKA_ACCESS_KEY_STAGING"],
         )
         print(f"Listening to topic {parsed_data_topic}")
+        f = open("/app/ready.txt", "w")
+
         for message in consumer:
             save_data(data_unpack(message.value))
