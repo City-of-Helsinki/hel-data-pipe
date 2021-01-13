@@ -34,8 +34,22 @@ jobs:
           DOCKER_BUILD_CONTEXT: ./${{ matrix.service }}
           DOCKER_IMAGE_NAME: ${{ matrix.service }}
 
+  review-services:
+    runs-on: ubuntu-latest
+    name: Deploy review services
+
+    steps:
+      - uses: andersinno/kolga-setup-action@v2
+
+      - name: Review Database
+        uses: andersinno/kolga-deploy-service-action@v2
+        with:
+          projects: persister
+        env:
+          POSTGRES_IMAGE: "docker.io/andersinnovations/postgis:11-bitnami"
+
   review:
-    needs: [build]
+    needs: [build,review-services]
 
     strategy:
       fail-fast: false
@@ -70,13 +84,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: andersinno/kolga-setup-action@v2
 
+      # Variables need to be set manually, as job fails if database is tried to start twice
       - name: Review Services
         if: matrix.ENABLE_DB
-        uses: andersinno/kolga-deploy-service-action@v2
-        with:
-          projects: ${{ matrix.dir }}
-        env:
-          POSTGRES_IMAGE: "docker.io/andersinnovations/postgis:11-bitnami"
+        run: |
+          echo "K8S_SECRET_DATABASE_DB=appdb" >> $GITHUB_ENV
+          echo "K8S_SECRET_DATABASE_HOST=${{ env.ENVIRONMENT_SLUG }}-review-postgresql" >> $GITHUB_ENV
+          echo "K8S_SECRET_DATABASE_PASSWORD=${{ env.DATABASE_PASSWORD }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_DATABASE_PORT=5432" >> $GITHUB_ENV
+          echo "K8S_SECRET_DATABASE_USERNAME=${{ env.DATABASE_USER }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_DATABASE_URL=postgresql://${{ env.DATABASE_USER }}:${{ env.DATABASE_PASSWORD }}@${{ env.ENVIRONMENT_SLUG }}-review-postgresql:5432/appdb" >> $GITHUB_ENV
 
       - name: Kafka variables
         run: |
@@ -107,6 +124,8 @@ jobs:
         if: matrix.SERVICE_PORT != ''
         run: |
           echo "ENVIRONMENT_URL=https://${{ env.K8S_NAMESPACE }}-${{ matrix.service }}.${{ env.BASE_DOMAIN }}" >> $GITHUB_ENV
+          echo "SERVICE_PORT=${{ matrix.SERVICE_PORT }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_ALLOWED_HOSTS=*" >> $GITHUB_ENV
 
       - name: File probes
         if: matrix.SERVICE_PORT == ''
@@ -120,11 +139,10 @@ jobs:
         run: |
           echo "K8S_SECRET_CONSUMER=1" >> $GITHUB_ENV
 
-      - name: Deploy ${{ matrix.dir }}
+      - name: Deploy ${{ matrix.service }} with image ${{ matrix.dir }}
         uses: andersinno/kolga-deploy-action@v2
         env:
           DOCKER_BUILD_SOURCE: ./${{ matrix.dir }}/Dockerfile
           DOCKER_BUILD_CONTEXT: ./${{ matrix.dir }}
           DOCKER_IMAGE_NAME: ${{ matrix.dir }}
-          PROJECT_NAME: ${{ matrix.dir }}
-          K8S_SECRET_ALLOWED_HOSTS: "*"
+          PROJECT_NAME: ${{ matrix.service }}
