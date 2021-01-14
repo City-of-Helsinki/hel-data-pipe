@@ -2,7 +2,7 @@
 
 set -e
 
-until nc -z -v -w30 "$DATABASE_HOST" 5432
+until nc -z -v -w30 "$DATABASE_HOST" $DATABASE_PORT
 do
     echo "Waiting for postgres database connection..."
     sleep 1
@@ -21,6 +21,8 @@ fi
 # Start server
 if [[ ! -z "$@" ]]; then
     "$@"
+elif [[ "$CONSUMER" = "1" ]]; then
+    python ./manage.py consume_parsed_data
 elif [[ "$DEV_SERVER" = "1" ]]; then
     python ./manage.py runserver 0.0.0.0:8080
 else

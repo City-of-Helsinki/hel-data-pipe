@@ -37,7 +37,8 @@ services:
     <<: *base
     build:
       context: ./persister
-    command: python manage.py consume_parsed_data
+    env:
+      CONSUMER: 1
     restart: always
     volumes:
       - ./persister/:/app/
