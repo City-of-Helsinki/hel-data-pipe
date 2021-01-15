@@ -48,7 +48,7 @@ jobs:
         env:
           POSTGRES_IMAGE: "docker.io/andersinnovations/postgis:11-bitnami"
 
-  review:
+  deploy-review:
     needs: [build,review-services]
 
     strategy:
@@ -138,6 +138,16 @@ jobs:
         if: matrix.CONSUMER == 1
         run: |
           echo "K8S_SECRET_CONSUMER=1" >> $GITHUB_ENV
+
+      - name: API settings
+        if: matrix.service == 'api'
+        run: |
+          echo "K8S_SECRET_ALLOWED_HOSTS=*" >> $GITHUB_ENV
+
+      - name: Endpoint settings
+        if: matrix.service == 'endpoint'
+        run: |
+          echo "K8S_SECRET_ENDPOINT_PATH=sensornode" >> $GITHUB_ENV
 
       - name: Deploy ${{ matrix.service }} with image ${{ matrix.dir }}
         uses: andersinno/kolga-deploy-action@v2
