@@ -3,7 +3,6 @@ import json
 import logging
 import os
 
-import certifi
 import pytz
 from dateutil.parser import parse
 from fvhiot.parsers import sensornode
@@ -34,23 +33,23 @@ def create_meta(devid, timestamp, message, request_data):
 try:
     print("Booting up parser")
 
-    f = open("/app/ready.txt", "w")
+    open("/app/ready.txt", "w")
 
     consumer = KafkaConsumer(
         os.environ["KAFKA_RAW_DATA_TOPIC_NAME"],
         bootstrap_servers=os.environ["KAFKA_BOOTSTRAP_SERVERS"].split(","),
         security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
-        ssl_cafile=os.environ["KAFKA_CA_STAGING"],
-        ssl_certfile=os.environ["KAFKA_ACCESS_CERT_STAGING"],
-        ssl_keyfile=os.environ["KAFKA_ACCESS_KEY_STAGING"],
+        ssl_cafile=os.getenv("KAFKA_CA_STAGING"),
+        ssl_certfile=os.getenv("KAFKA_ACCESS_CERT_STAGING"),
+        ssl_keyfile=os.getenv("KAFKA_ACCESS_KEY_STAGING"),
     )
 
     producer = KafkaProducer(
         bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS").split(","),
         security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
-        ssl_cafile=os.environ["KAFKA_CA_STAGING"],
-        ssl_certfile=os.environ["KAFKA_ACCESS_CERT_STAGING"],
-        ssl_keyfile=os.environ["KAFKA_ACCESS_KEY_STAGING"],
+        ssl_cafile=os.getenv("KAFKA_CA_STAGING"),
+        ssl_certfile=os.getenv("KAFKA_ACCESS_CERT_STAGING"),
+        ssl_keyfile=os.getenv("KAFKA_ACCESS_KEY_STAGING"),
     )
 
     for message in consumer:

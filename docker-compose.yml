@@ -37,8 +37,11 @@ services:
     <<: *base
     build:
       context: ./persister
-    env:
+      target: development
+    environment:
       CONSUMER: 1
+      APPLY_MIGRATIONS: 1
+      INITIALIZE_DATA: 1
     restart: always
     volumes:
       - ./persister/:/app/
