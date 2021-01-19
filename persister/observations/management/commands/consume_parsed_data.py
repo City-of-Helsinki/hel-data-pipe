@@ -22,5 +22,4 @@ class Command(BaseCommand):
         open("/app/ready.txt", "w")
 
         for message in consumer:
-            print("Incoming message")
             save_data(data_unpack(message.value))
