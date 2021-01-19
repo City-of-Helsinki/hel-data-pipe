@@ -1,6 +1,5 @@
 import os
 
-import certifi
 from flask import Flask, abort, request
 from fvhiot.utils.data import data_pack
 from fvhiot.utils.http import extract_data_from_flask_request
@@ -30,9 +29,9 @@ def get_kafka_producer():
     return KafkaProducer(
         bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS", "").split(","),
         security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
-        ssl_cafile=os.environ["KAFKA_CA_STAGING"],
-        ssl_certfile=os.environ["KAFKA_ACCESS_CERT_STAGING"],
-        ssl_keyfile=os.environ["KAFKA_ACCESS_KEY_STAGING"],
+        ssl_cafile=os.getenv("KAFKA_CA_STAGING"),
+        ssl_certfile=os.getenv("KAFKA_ACCESS_CERT_STAGING"),
+        ssl_keyfile=os.getenv("KAFKA_ACCESS_KEY_STAGING"),
     )
 
 
@@ -69,10 +68,10 @@ def catchall(path: str):
     if len(data["request"]["body"]) > body_max_size:
         return f"Request body too large (>{body_max_size}B)", 400
     topic_name = os.getenv("KAFKA_RAW_DATA_TOPIC_NAME")
-    print(f"Sending stuff to {topic_name}")
+    app.logger.info(f"Sending stuff to {topic_name}")
     app.producer.send(topic_name, value=data_pack(data))
     return "OK", 200
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=os.getenv("DEBUG", False))

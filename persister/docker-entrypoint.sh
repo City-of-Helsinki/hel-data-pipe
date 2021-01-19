@@ -18,12 +18,23 @@ if [ -z "$SKIP_KAFKA_CHECK" -o "$SKIP_KAFKA_CHECK" = "0" ]; then
     echo "Kafka is up!"
 fi
 
+if [[ "$APPLY_MIGRATIONS" = "1" ]]; then
+    echo "Applying database migrations..."
+    ./manage.py migrate --noinput
+fi
+
+
+if [[ "$INITIALIZE_DATA" = "1" ]]; then
+    echo "Initializing data..."
+    ./manage.py initialize_data
+fi
+
 # Start server
-if [[ ! -z "$@" ]]; then
+if [ ! -z "$@" ]; then
     "$@"
-elif [[ "$CONSUMER" = "1" ]]; then
+elif [ "$CONSUMER" = "1" ]; then
     python ./manage.py consume_parsed_data
-elif [[ "$DEV_SERVER" = "1" ]]; then
+elif [ "$DEV_SERVER" = "1" ]; then
     python ./manage.py runserver 0.0.0.0:8080
 else
     uwsgi --ini .prod/uwsgi.ini
