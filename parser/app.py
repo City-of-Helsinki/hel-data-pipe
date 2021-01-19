@@ -2,12 +2,18 @@ import datetime
 import json
 import logging
 import os
+import sys
 
 import pytz
 from dateutil.parser import parse
 from fvhiot.parsers import sensornode
 from fvhiot.utils.data import data_pack, data_unpack
 from kafka import KafkaConsumer, KafkaProducer
+
+logging.basicConfig(
+    stream=sys.stdout, level=logging.DEBUG if os.getenv("DEBUG") else logging.ERROR
+)
+logger = logging.getLogger("logger")
 
 
 def create_dataline(timestamp: datetime.datetime, data: dict):
@@ -31,7 +37,7 @@ def create_meta(devid, timestamp, message, request_data):
 
 
 try:
-    print("Booting up parser")
+    logger.debug("Booting up parser")
 
     open("/app/ready.txt", "w")
 
@@ -53,8 +59,6 @@ try:
     )
 
     for message in consumer:
-        # now = datetime.datetime.now().isoformat()
-        # TODO: error handling here
         message_value = data_unpack(message.value)
         devid = message_value["request"]["get"].get("LrnDevEui")
         if devid is None:

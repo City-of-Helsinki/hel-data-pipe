@@ -1,13 +1,25 @@
 import os
+from logging.config import dictConfig
 
 from flask import Flask, abort, request
 from fvhiot.utils.data import data_pack
 from fvhiot.utils.http import extract_data_from_flask_request
 from kafka import KafkaProducer
 
-# TODO: figure out how to use logging instead of print in docker
-# import logging
-
+dictConfig(
+    {
+        "version": 1,
+        "formatters": {
+            "default": {
+                "format": "[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+            }
+        },
+        "handlers": {
+            "wsgi": {"class": "logging.StreamHandler", "formatter": "default"}
+        },
+        "root": {"level": "DEBUG", "handlers": ["wsgi"]},
+    }
+)
 
 app = Flask(__name__)
 
@@ -68,7 +80,6 @@ def catchall(path: str):
     if len(data["request"]["body"]) > body_max_size:
         return f"Request body too large (>{body_max_size}B)", 400
     topic_name = os.getenv("KAFKA_RAW_DATA_TOPIC_NAME")
-    app.logger.info(f"Sending stuff to {topic_name}")
     app.producer.send(topic_name, value=data_pack(data))
     return "OK", 200
 

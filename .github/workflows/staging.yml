@@ -126,6 +126,16 @@ jobs:
         run: |
           echo "K8S_SECRET_CONSUMER=1" >> $GITHUB_ENV
 
+      - name: Run migrations setting
+        if: matrix.APPLY_MIGRATIONS == 1
+        run: |
+          echo "K8S_SECRET_APPLY_MIGRATIONS=1" >> $GITHUB_ENV
+
+      - name: Initialize data setting
+        if: matrix.INITIALIZE_DATA == 1
+        run: |
+          echo "K8S_SECRET_INITIALIZE_DATA=1" >> $GITHUB_ENV
+
       - name: API settings
         if: matrix.service == 'api'
         run: |
