@@ -121,20 +121,12 @@ jobs:
           echo "K8S_READINESS_FILE=/app/ready.txt" >> $GITHUB_ENV
           echo "K8S_INGRESS_DISABLED=True" >> $GITHUB_ENV
 
-      - name: Consumer settings
-        if: matrix.CONSUMER == 1
+      - name: Persister settings
+        if: matrix.service == 'persister'
         run: |
-          echo "K8S_SECRET_CONSUMER=1" >> $GITHUB_ENV
-
-      - name: Run migrations setting
-        if: matrix.APPLY_MIGRATIONS == 1
-        run: |
-          echo "K8S_SECRET_APPLY_MIGRATIONS=1" >> $GITHUB_ENV
-
-      - name: Initialize data setting
-        if: matrix.INITIALIZE_DATA == 1
-        run: |
-          echo "K8S_SECRET_INITIALIZE_DATA=1" >> $GITHUB_ENV
+          echo "K8S_SECRET_CONSUMER=${{ matrix.CONSUMER }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_APPLY_MIGRATIONS=${{ matrix.APPLY_MIGRATIONS }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_INITIALIZE_DATA=${{ matrix.INITIALIZE_DATA }}" >> $GITHUB_ENV
 
       - name: API settings
         if: matrix.service == 'api'
