@@ -4,7 +4,7 @@ from django.db import migrations, models
 
 
 def set_channel_name(apps, schema_editor):
-    Channel = apps.get_model("observations", "Channel")
+    Channel = apps.get_model("observations", "Channel")  # noqa: N806
     for channel in Channel.objects.all():
         if not channel.name:
             channel.name = (

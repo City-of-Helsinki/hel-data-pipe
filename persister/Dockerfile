@@ -28,6 +28,14 @@ COPY --chown=appuser:appuser docker-entrypoint.sh /entrypoint/docker-entrypoint.
 ENTRYPOINT ["/entrypoint/docker-entrypoint.sh"]
 
 # ==============================
+FROM appbase as staticbuilder
+# ==============================
+
+ENV VAR_ROOT /app
+COPY --chown=appuser:appuser . /app
+RUN python manage.py collectstatic --noinput
+
+# ==============================
 FROM appbase as development
 # ==============================
 
@@ -50,6 +58,8 @@ EXPOSE 5000/tcp
 # ==============================
 FROM appbase as production
 # ==============================
+
+COPY --from=staticbuilder --chown=appuser:appuser /app/static /app/static
 
 COPY --chown=appuser:appuser requirements-prod.txt /app/requirements-prod.txt
 RUN pip install --no-cache-dir -r /app/requirements-prod.txt
