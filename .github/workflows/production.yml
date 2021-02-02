@@ -1,5 +1,8 @@
-name: Build & Review
-on: [pull_request]
+name: Build & STABLE
+on:
+  push:
+    branches:
+      - master
 
 env:
   CONTAINER_REGISTRY: ghcr.io
@@ -7,12 +10,10 @@ env:
   CONTAINER_REGISTRY_PASSWORD: ${{ secrets.GHCR_TOKEN }}
   CONTAINER_REGISTRY_REPO: ghcr.io/city-of-helsinki/${{ github.event.repository.name }}
   REPO_NAME: ${{ github.event.repository.name }}
-  KUBECONFIG_RAW: ${{ secrets.KUBECONFIG_RAW }}
+  KUBECONFIG_RAW: ${{ secrets.KUBECONFIG_RAW_STABLE }}
   BUILD_ARTIFACT_FOLDER: "build_artifacts"
   SERVICE_ARTIFACT_FOLDER: "service_artifacts"
-  DATABASE_USER: user
-  DATABASE_PASSWORD: testing-password
-  BASE_DOMAIN: ${{ secrets.BASE_DOMAIN_STAGING }}
+  BASE_DOMAIN: ${{ secrets.BASE_DOMAIN_STABLE }}
 
 jobs:
   build:
@@ -34,22 +35,8 @@ jobs:
           DOCKER_BUILD_CONTEXT: ./${{ matrix.service }}
           DOCKER_IMAGE_NAME: ${{ matrix.service }}
 
-  review-services:
-    runs-on: ubuntu-latest
-    name: Deploy review services
-
-    steps:
-      - uses: andersinno/kolga-setup-action@v2
-
-      - name: Review Database
-        uses: andersinno/kolga-deploy-service-action@v2
-        with:
-          projects: persister
-        env:
-          POSTGRES_IMAGE: "docker.io/andersinnovations/postgis:11-bitnami"
-
-  deploy-review:
-    needs: [build, review-services]
+  deploy-STABLE:
+    needs: [build]
 
     strategy:
       fail-fast: false
@@ -77,7 +64,6 @@ jobs:
             K8S_READINESS_FILE: /app/ready.txt
             CONSUMER: 1
             APPLY_MIGRATIONS: 1
-            INITIALIZE_DATA: 1
 
     runs-on: ubuntu-latest
     name: Review ${{ matrix.service }}
@@ -86,34 +72,33 @@ jobs:
       - uses: actions/checkout@v2
       - uses: andersinno/kolga-setup-action@v2
 
-      # Variables need to be set manually, as job fails if database is tried to start twice
       - name: Review Services
         if: matrix.ENABLE_DB
         run: |
-          echo "K8S_SECRET_DATABASE_DB=appdb" >> $GITHUB_ENV
-          echo "K8S_SECRET_DATABASE_HOST=${{ env.ENVIRONMENT_SLUG }}-review-postgresql" >> $GITHUB_ENV
-          echo "K8S_SECRET_DATABASE_PASSWORD=${{ env.DATABASE_PASSWORD }}" >> $GITHUB_ENV
-          echo "K8S_SECRET_DATABASE_PORT=5432" >> $GITHUB_ENV
-          echo "K8S_SECRET_DATABASE_USERNAME=${{ env.DATABASE_USER }}" >> $GITHUB_ENV
-          echo "K8S_SECRET_DATABASE_URL=postgresql://${{ env.DATABASE_USER }}:${{ env.DATABASE_PASSWORD }}@${{ env.ENVIRONMENT_SLUG }}-review-postgresql:5432/appdb" >> $GITHUB_ENV
+          echo "K8S_SECRET_DATABASE_HOST=${{ secrets.K8S_SECRET_DATABASE_HOST_STABLE }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_DATABASE_URL=${{ secrets.K8S_SECRET_DATABASE_URL_STABLE }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_DATABASE_PORT=${{ secrets.K8S_SECRET_DATABASE_PORT_STABLE }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_DATABASE_DB=${{ secrets.K8S_SECRET_DATABASE_DB_STABLE }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_DATABASE_USERNAME=${{ secrets.K8S_SECRET_DATABASE_USERNAME_STABLE }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_DATABASE_PASSWORD=${{ secrets.K8S_SECRET_DATABASE_PASSWORD_STABLE }}" >> $GITHUB_ENV
 
       - name: Kafka variables
         run: |
-          echo "K8S_SECRET_KAFKA_BOOTSTRAP_SERVERS=${{ secrets.K8S_SECRET_KAFKA_HOST_STAGING }}:${{ secrets.K8S_SECRET_KAFKA_PORT_STAGING }}" >> $GITHUB_ENV
-          echo "K8S_SECRET_KAFKA_HOST=${{ secrets.K8S_SECRET_KAFKA_HOST_STAGING }}" >> $GITHUB_ENV
-          echo "K8S_SECRET_KAFKA_PORT=${{ secrets.K8S_SECRET_KAFKA_PORT_STAGING }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_KAFKA_BOOTSTRAP_SERVERS=${{ secrets.K8S_SECRET_KAFKA_HOST_STABLE }}:${{ secrets.K8S_SECRET_KAFKA_PORT_STABLE }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_KAFKA_HOST=${{ secrets.K8S_SECRET_KAFKA_HOST_STABLE }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_KAFKA_PORT=${{ secrets.K8S_SECRET_KAFKA_PORT_STABLE }}" >> $GITHUB_ENV
           echo "K8S_SECRET_KAFKA_SECURITY_PROTOCOL=SSL" >> $GITHUB_ENV
           echo "K8S_SECRET_KAFKA_SASL_MECHANISM=${{ secrets.KAFKA_SASL_MECHANISM }}" >> $GITHUB_ENV
-          echo "K8S_SECRET_KAFKA_RAW_DATA_TOPIC_NAME=${{ env.K8S_NAMESPACE }}.review.rawdata" >> $GITHUB_ENV
-          echo "K8S_SECRET_KAFKA_PARSED_DATA_TOPIC_NAME=${{ env.K8S_NAMESPACE }}.review.parseddata" >> $GITHUB_ENV
+          echo "K8S_SECRET_KAFKA_RAW_DATA_TOPIC_NAME=${{ secrets.K8S_SECRET_KAFKA_RAW_DATA_TOPIC_STABLE }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_KAFKA_PARSED_DATA_TOPIC_NAME=${{ secrets.K8S_SECRET_KAFKA_PARSED_DATA_TOPIC_STABLE }}" >> $GITHUB_ENV
           echo "K8S_FILE_SECRET_KAFKA_CA<<EOF" >> $GITHUB_ENV
-          echo "${{ secrets.K8S_SECRET_KAFKA_CA_STAGING }}" >> $GITHUB_ENV
+          echo "${{ secrets.K8S_SECRET_KAFKA_CA_STABLE }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           echo "K8S_FILE_SECRET_KAFKA_ACCESS_CERT<<EOF" >> $GITHUB_ENV
-          echo "${{ secrets.K8S_SECRET_KAFKA_ACCESS_CERT_STAGING }}" >> $GITHUB_ENV
+          echo "${{ secrets.K8S_SECRET_KAFKA_ACCESS_CERT_STABLE }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           echo "K8S_FILE_SECRET_KAFKA_ACCESS_KEY<<EOF" >> $GITHUB_ENV
-          echo "${{ secrets.K8S_SECRET_KAFKA_ACCESS_KEY_STAGING }}" >> $GITHUB_ENV
+          echo "${{ secrets.K8S_SECRET_KAFKA_ACCESS_KEY_STABLE }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
         if: matrix.ENABLE_KAFKA
 
@@ -125,7 +110,7 @@ jobs:
       - name: Service with ingress
         if: matrix.SERVICE_PORT != ''
         run: |
-          echo "ENVIRONMENT_URL=https://${{ env.K8S_NAMESPACE }}-${{ matrix.service }}.${{ env.BASE_DOMAIN }}" >> $GITHUB_ENV
+          echo "ENVIRONMENT_URL=https://${{ matrix.service }}.heldatapipe.${{ env.BASE_DOMAIN }}" >> $GITHUB_ENV
           echo "SERVICE_PORT=${{ matrix.SERVICE_PORT }}" >> $GITHUB_ENV
           echo "K8S_SECRET_ALLOWED_HOSTS=*" >> $GITHUB_ENV
 
@@ -155,8 +140,11 @@ jobs:
 
       - name: Deploy ${{ matrix.service }} with image ${{ matrix.dir }}
         uses: andersinno/kolga-deploy-action@v2
+        with:
+          track: "stable"
         env:
           DOCKER_BUILD_SOURCE: ./${{ matrix.dir }}/Dockerfile
           DOCKER_BUILD_CONTEXT: ./${{ matrix.dir }}
           DOCKER_IMAGE_NAME: ${{ matrix.dir }}
           PROJECT_NAME: ${{ matrix.service }}
+          K8S_NAMESPACE: ${{ secrets.K8S_NAMESPACE_STABLE }}
