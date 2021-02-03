@@ -28,6 +28,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: API settings
+        if: matrix.service == 'persister'
+        run: |
+          echo "K8S_SECRET_SECRET_KEY=${{ secrets.K8S_SECRET_SECRET_KEY_STAGING }}" >> $GITHUB_ENV
+
       - name: Build ${{ matrix.service }}
         uses: andersinno/kolga-build-action@v2
         env:
@@ -132,6 +137,8 @@ jobs:
         if: matrix.service == 'api'
         run: |
           echo "K8S_SECRET_ALLOWED_HOSTS=*" >> $GITHUB_ENV
+          echo "K8S_SECRET_SECRET_KEY=${{ secrets.K8S_SECRET_SECRET_KEY_STAGING }}" >> $GITHUB_ENV
+
 
       - name: Endpoint settings
         if: matrix.service == 'endpoint'
