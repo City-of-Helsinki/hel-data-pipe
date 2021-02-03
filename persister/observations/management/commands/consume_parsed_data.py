@@ -14,9 +14,9 @@ class Command(BaseCommand):
             parsed_data_topic,
             bootstrap_servers=os.environ["KAFKA_BOOTSTRAP_SERVERS"].split(","),
             security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
-            ssl_cafile=os.getenv("KAFKA_CA_STAGING"),
-            ssl_certfile=os.getenv("KAFKA_ACCESS_CERT_STAGING"),
-            ssl_keyfile=os.getenv("KAFKA_ACCESS_KEY_STAGING"),
+            ssl_cafile=os.getenv("KAFKA_CA"),
+            ssl_certfile=os.getenv("KAFKA_ACCESS_CERT"),
+            ssl_keyfile=os.getenv("KAFKA_ACCESS_KEY"),
         )
         print(f"Listening to topic {parsed_data_topic}")
         open("/app/ready.txt", "w")
