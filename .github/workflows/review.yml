@@ -13,7 +13,7 @@ env:
   DATABASE_USER: user
   DATABASE_PASSWORD: testing-password
   BASE_DOMAIN: ${{ secrets.BASE_DOMAIN_STAGING }}
-
+  K8S_SECRET_SECRET_KEY: ${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}
 
 jobs:
   build:
@@ -27,11 +27,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: API settings
-        if: matrix.service == 'persister'
-        run: |
-          echo "K8S_SECRET_SECRET_KEY=${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}" >> $GITHUB_ENV
 
       - name: Build ${{ matrix.service }}
         uses: andersinno/kolga-build-action@v2
@@ -153,7 +148,6 @@ jobs:
         if: matrix.service == 'api'
         run: |
           echo "K8S_SECRET_ALLOWED_HOSTS=*" >> $GITHUB_ENV
-          echo "K8S_SECRET_SECRET_KEY=${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}" >> $GITHUB_ENV
 
       - name: Endpoint settings
         if: matrix.service == 'endpoint'
