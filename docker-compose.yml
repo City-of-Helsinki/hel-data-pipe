@@ -28,8 +28,6 @@ services:
     build:
       context: ./persister
       target: development
-      args:
-        - SECRET_KEY=${SECRET_KEY}
     ports:
       - "8080:8080"
     restart: always
@@ -40,8 +38,6 @@ services:
     build:
       context: ./persister
       target: development
-      args:
-        - SECRET_KEY=${SECRET_KEY}
     environment:
       CONSUMER: 1
       APPLY_MIGRATIONS: 1

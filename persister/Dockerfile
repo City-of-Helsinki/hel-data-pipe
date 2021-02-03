@@ -31,11 +31,9 @@ ENTRYPOINT ["/entrypoint/docker-entrypoint.sh"]
 FROM appbase as staticbuilder
 # ==============================
 
-ARG SECRET_KEY
-ENV SECRET_KEY $SECRET_KEY
 ENV VAR_ROOT /app
 COPY --chown=appuser:appuser . /app
-RUN python manage.py collectstatic --noinput
+RUN SECRET_KEY="only-used-for-collectstatic" python manage.py collectstatic --noinput
 
 # ==============================
 FROM appbase as development
