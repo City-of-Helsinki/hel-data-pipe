@@ -15,7 +15,7 @@ fi
 if [[ ! -z "$@" ]]; then
     "$@"
 elif [[ "$DEV_SERVER" = "1" ]]; then
-    FLASK_DEBUG=1 flask run --host=0.0.0.0
+    FLASK_DEBUG="$DEBUG" flask run --host=0.0.0.0
 else
     uwsgi --ini .prod/uwsgi.ini
 fi
