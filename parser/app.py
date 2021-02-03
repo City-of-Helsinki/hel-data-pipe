@@ -10,10 +10,12 @@ from fvhiot.parsers import sensornode
 from fvhiot.utils.data import data_pack, data_unpack
 from kafka import KafkaConsumer, KafkaProducer
 
-logging.basicConfig(
-    stream=sys.stdout, level=logging.DEBUG if os.getenv("DEBUG") else logging.ERROR
-)
+logging.basicConfig(stream=sys.stdout)
+
 logger = logging.getLogger("logger")
+logger.setLevel(
+    logging.DEBUG if os.getenv("DEBUG") in [True, 1, "1"] else logging.WARNING
+)
 
 
 def create_dataline(timestamp: datetime.datetime, data: dict):
@@ -62,7 +64,7 @@ try:
         message_value = data_unpack(message.value)
         devid = message_value["request"]["get"].get("LrnDevEui")
         if devid is None:
-            print("ERROR: no LrnDevEui in request! False request in Kafka?")
+            logger.error("ERROR: no LrnDevEui in request! False request in Kafka?")
             continue
         request_body: bytes = message_value["request"]["body"]
         # TODO: catch json exceptions
@@ -78,7 +80,7 @@ try:
         dataline = create_dataline(timestamp, parsed_data)
         meta = create_meta(devid, timestamp, message_value, data)
         parsed_data_message = {"meta": meta, "data": [dataline]}
-        print(json.dumps(parsed_data_message, indent=1))
+        logger.debug(json.dumps(parsed_data_message, indent=1))
         producer.send(
             os.getenv("KAFKA_PARSED_DATA_TOPIC_NAME"),
             value=data_pack(parsed_data_message),
@@ -86,5 +88,5 @@ try:
 
 
 except Exception as e:
-    print(e)
+    logger.error(e)
     raise
