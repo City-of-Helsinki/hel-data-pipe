@@ -13,7 +13,6 @@ env:
   DATABASE_USER: user
   DATABASE_PASSWORD: testing-password
   BASE_DOMAIN: ${{ secrets.BASE_DOMAIN_STAGING }}
-  K8S_SECRET_SECRET_KEY: ${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}
 
 jobs:
   build:
@@ -143,11 +142,13 @@ jobs:
           echo "K8S_SECRET_CONSUMER=${{ matrix.CONSUMER }}" >> $GITHUB_ENV
           echo "K8S_SECRET_APPLY_MIGRATIONS=${{ matrix.APPLY_MIGRATIONS }}" >> $GITHUB_ENV
           echo "K8S_SECRET_INITIALIZE_DATA=${{ matrix.INITIALIZE_DATA }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_SECRET_KEY=${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}" >> $GITHUB_ENV
 
       - name: API settings
         if: matrix.service == 'api'
         run: |
           echo "K8S_SECRET_ALLOWED_HOSTS=*" >> $GITHUB_ENV
+          echo "K8S_SECRET_SECRET_KEY=${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}" >> $GITHUB_ENV
 
       - name: Endpoint settings
         if: matrix.service == 'endpoint'
