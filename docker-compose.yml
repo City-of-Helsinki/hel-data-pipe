@@ -2,7 +2,7 @@ version: "3.7"
 
 x-base: &base
   env_file:
-    - ./.env.dev
+    - .env
 
 services:
   endpoint:

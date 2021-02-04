@@ -13,6 +13,7 @@ env:
   DATABASE_USER: user
   DATABASE_PASSWORD: testing-password
   BASE_DOMAIN: ${{ secrets.BASE_DOMAIN_STAGING }}
+  K8S_SECRET_SECRET_KEY: ${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}
 
 jobs:
   build:
