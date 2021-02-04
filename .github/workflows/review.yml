@@ -138,17 +138,21 @@ jobs:
 
       - name: Persister settings
         if: matrix.service == 'persister'
+        env:
+          SECRET_KEY: ${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}
         run: |
           echo "K8S_SECRET_CONSUMER=${{ matrix.CONSUMER }}" >> $GITHUB_ENV
           echo "K8S_SECRET_APPLY_MIGRATIONS=${{ matrix.APPLY_MIGRATIONS }}" >> $GITHUB_ENV
           echo "K8S_SECRET_INITIALIZE_DATA=${{ matrix.INITIALIZE_DATA }}" >> $GITHUB_ENV
-          echo "K8S_SECRET_SECRET_KEY=${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
 
       - name: API settings
         if: matrix.service == 'api'
+        env:
+          SECRET_KEY: ${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}
         run: |
           echo "K8S_SECRET_ALLOWED_HOSTS=*" >> $GITHUB_ENV
-          echo "K8S_SECRET_SECRET_KEY=${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
 
       - name: Endpoint settings
         if: matrix.service == 'endpoint'
