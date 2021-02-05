@@ -66,13 +66,13 @@ jobs:
             APPLY_MIGRATIONS: 1
 
     runs-on: ubuntu-latest
-    name: Review ${{ matrix.service }}
+    name: Deploy staging ${{ matrix.service }}
 
     steps:
       - uses: actions/checkout@v2
       - uses: andersinno/kolga-setup-action@v2
 
-      - name: Review Services
+      - name: Database variables
         if: matrix.ENABLE_DB
         run: |
           echo "K8S_SECRET_DATABASE_HOST=${{ secrets.K8S_SECRET_DATABASE_HOST_STAGING }}" >> $GITHUB_ENV
