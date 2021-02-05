@@ -80,14 +80,14 @@ jobs:
             INITIALIZE_DATA: 1
 
     runs-on: ubuntu-latest
-    name: Review ${{ matrix.service }}
+    name: Deploy review ${{ matrix.service }}
 
     steps:
       - uses: actions/checkout@v2
       - uses: andersinno/kolga-setup-action@v2
 
       # Variables need to be set manually, as job fails if database is tried to start twice
-      - name: Review Services
+      - name: Database variables
         if: matrix.ENABLE_DB
         run: |
           echo "K8S_SECRET_DATABASE_DB=appdb" >> $GITHUB_ENV

@@ -2,6 +2,14 @@
 
 The purpose of the system is to be able to receive any kind of IoT data of City of Helsinki in a performant, reliable and secure manner and serve it as an API for further usage.
 
+## Environments
+
+Review (PR branch): Deployed temporarily at <temporary name>.test.kuva.hel.ninja. See the nams from review's deploy step. Valid until the PR gets closed.
+
+Staging (develop branch): https://api.heldatapipe.test.kuva.hel.ninja/, https://endpoint.heldatapipe.test.kuva.hel.ninja/.
+
+Production (master branch): https://api.heldatapipe.prod.kuva.hel.ninja/, https://endpoint.heldatapipe.prod.kuva.hel.ninja/.
+
 ## Components
 
 - [Endpoint](https://github.com/City-of-Helsinki/hel-data-pipe/tree/develop/endpoint) - Flask API that receives data from IoT sensors and gateways, authenticates the requests and puts the data to the buffer for further processing as Kafka producer.
