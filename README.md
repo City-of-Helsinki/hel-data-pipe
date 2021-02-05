@@ -4,7 +4,7 @@ The purpose of the system is to be able to receive any kind of IoT data of City 
 
 ## Environments
 
-Review (PR branch): Delpoyed temporarily at <temporary name>.test.kuva.hel.ninja. See the nams from review's deploy step. Valid until the PR gets closed.
+Review (PR branch): Deployed temporarily at <temporary name>.test.kuva.hel.ninja. See the nams from review's deploy step. Valid until the PR gets closed.
 
 Staging (develop branch): https://api.heldatapipe.test.kuva.hel.ninja/, https://endpoint.heldatapipe.test.kuva.hel.ninja/.
 
