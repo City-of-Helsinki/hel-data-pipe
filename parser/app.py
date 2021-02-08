@@ -66,22 +66,21 @@ try:
             logger.error("ERROR: no LrnDevEui in request! False request in Kafka?")
             continue
 
-        logger.info(f"Receiced data from device id {devid}")
+        logger.info(f"Received data from device id {devid}")
 
         device = devices.get_device(devid)
         if not device:
-            logger.warning("Device missing from device database, ignored")
+            logger.warning("Device missing from device database")
             # TODO: push to DLQ
             continue
 
-        logger.debug(f"device entry: {device}")
+        logger.debug(f"{device}")
 
-        request_body: bytes = message_value["request"]["body"]
+        request_body = message_value["request"]["body"]
         # TODO: catch json exceptions
         data = json.loads(request_body.decode())
 
-        parser = parsers.get_parser(device["parser"])
-        logger.debug(f"parser: {parser}")
+        parser = device.get_parser()
         if not parser:
             logger.warning(f"Parser not found for device {devid}")
             #TODO: push to DLQ
@@ -89,10 +88,9 @@ try:
 
         parsed_data = parser.parse_payload(data)
         timestamp = parser.parse_timestamp(data)
-        devtype = device["dev-type"]
 
         dataline = create_dataline(timestamp, parsed_data)
-        meta = create_meta(devid, devtype, timestamp, message_value, data)
+        meta = create_meta(devid, device.devtype, timestamp, message_value, data)
         parsed_data_message = {"meta": meta, "data": [dataline]}
         logger.debug(json.dumps(parsed_data_message, indent=1))
         parsed_topic_name = os.getenv("KAFKA_PARSED_DATA_TOPIC_NAME")

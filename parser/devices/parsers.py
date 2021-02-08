@@ -48,12 +48,10 @@ class DummyParser:
             return None
         return ul["payload_hex"]
 
-
 PARSERS = [
     { "sensor_type": "sensornode", "parser": SensornodeParser() }
     #{ "sensor_type": "sensornode", "parser": DummyParser() }
 ]
-
 
 def get_parser(sensor_type):
     """ Get entry from device database according to device id. """
