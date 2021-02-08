@@ -14,7 +14,7 @@ logging.basicConfig(stream=sys.stdout)
 
 logger = logging.getLogger("logger")
 logger.setLevel(
-    logging.DEBUG if os.getenv("DEBUG") in [True, 1, "1"] else logging.WARNING
+    logging.DEBUG if os.getenv("DEBUG") in [True, 1, "1"] else logging.INFO
 )
 
 
@@ -66,6 +66,7 @@ try:
         if devid is None:
             logger.error("ERROR: no LrnDevEui in request! False request in Kafka?")
             continue
+        logger.info(f"Reveiced data from device id {devid}")
         request_body: bytes = message_value["request"]["body"]
         # TODO: catch json exceptions
         data = json.loads(request_body.decode())
@@ -81,8 +82,10 @@ try:
         meta = create_meta(devid, timestamp, message_value, data)
         parsed_data_message = {"meta": meta, "data": [dataline]}
         logger.debug(json.dumps(parsed_data_message, indent=1))
+        parsed_topic_name = os.getenv("KAFKA_PARSED_DATA_TOPIC_NAME")
+        logging.info(f"Sending data to {parsed_topic_name}")
         producer.send(
-            os.getenv("KAFKA_PARSED_DATA_TOPIC_NAME"),
+            parsed_topic_name,
             value=data_pack(parsed_data_message),
         )
 

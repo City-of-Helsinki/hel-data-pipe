@@ -1,4 +1,5 @@
 import os
+import logging
 from logging.config import dictConfig
 
 from flask import Flask, abort, request
@@ -67,7 +68,7 @@ def catchall(path: str):
     endpoint_path = os.getenv("ENDPOINT_PATH")
     # Reject requests not matching the one defined in env
     if endpoint_path != path:
-        print(f"{endpoint_path} did not match {path}. Rejecting this request.")
+        logging.warning(f"{endpoint_path} did not match {path}. Rejecting this request.")
         abort(404, description="Resource not found")
     if app.producer is None:
         app.producer = get_kafka_producer()
@@ -80,6 +81,7 @@ def catchall(path: str):
     if len(data["request"]["body"]) > body_max_size:
         return f"Request body too large (>{body_max_size}B)", 400
     topic_name = os.getenv("KAFKA_RAW_DATA_TOPIC_NAME")
+    logging.info(f"Sending {endpoint_path} data to {topic_name}")
     app.producer.send(topic_name, value=data_pack(data))
     return "OK", 200
 
