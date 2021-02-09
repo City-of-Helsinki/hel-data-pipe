@@ -13,9 +13,10 @@ from kafka import KafkaConsumer, KafkaProducer
 logging.basicConfig(stream=sys.stdout)
 
 logger = logging.getLogger("logger")
-logger.setLevel(
-    logging.DEBUG if os.getenv("DEBUG") in [True, 1, "1"] else logging.INFO
-)
+logger.setLevel(logging.DEBUG if os.getenv("DEBUG") in [True, 1, "1"] else logging.INFO)
+
+# hard coded group id to enable multiple instances
+KAFKA_GROUP_ID = "parser"
 
 
 def create_dataline(timestamp: datetime.datetime, data: dict):
@@ -45,6 +46,7 @@ try:
 
     consumer = KafkaConsumer(
         os.environ["KAFKA_RAW_DATA_TOPIC_NAME"],
+        group_id=KAFKA_GROUP_ID,
         bootstrap_servers=os.environ["KAFKA_BOOTSTRAP_SERVERS"].split(","),
         security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
         ssl_cafile=os.getenv("KAFKA_CA"),

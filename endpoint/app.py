@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 from logging.config import dictConfig
 
 from flask import Flask, abort, request
@@ -68,7 +68,9 @@ def catchall(path: str):
     endpoint_path = os.getenv("ENDPOINT_PATH")
     # Reject requests not matching the one defined in env
     if endpoint_path != path:
-        logging.warning(f"{endpoint_path} did not match {path}. Rejecting this request.")
+        logging.warning(
+            f"{endpoint_path} did not match {path}. Rejecting this request."
+        )
         abort(404, description="Resource not found")
     if app.producer is None:
         app.producer = get_kafka_producer()
