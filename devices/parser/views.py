@@ -10,7 +10,6 @@ class SensorTypeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SensorType.objects.all()
     serializer_class = SensorTypeSerializer
 
-
 class DeviceViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer

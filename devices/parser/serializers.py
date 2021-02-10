@@ -8,7 +8,7 @@ class SensorTypeSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class DeviceSerializer(serializers.ModelSerializer):
+class DeviceSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Device
         fields = "__all__"

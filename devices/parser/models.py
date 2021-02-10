@@ -30,7 +30,7 @@ class Device(models.Model):
 
     sensortype = models.ForeignKey(
         SensorType,
-        related_name="SensorType",
+        related_name="sensortype",
         default=None,
         on_delete=models.CASCADE,
     )
