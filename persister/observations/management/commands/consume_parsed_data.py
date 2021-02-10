@@ -6,12 +6,16 @@ from kafka import KafkaConsumer
 
 from observations.models import save_data
 
+# group id to enable multiple parallel instances
+KAFKA_GROUP_ID = "persister"
+
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
         parsed_data_topic = os.environ.get("KAFKA_PARSED_DATA_TOPIC_NAME")
         consumer = KafkaConsumer(
             parsed_data_topic,
+            group_id=KAFKA_GROUP_ID,
             bootstrap_servers=os.environ["KAFKA_BOOTSTRAP_SERVERS"].split(","),
             security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
             ssl_cafile=os.getenv("KAFKA_CA"),
