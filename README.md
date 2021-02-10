@@ -59,3 +59,4 @@ NOTE! Because of monorepo project structure `pre-commit` doesn't work that well.
 ## Issues board
 
 https://helsinkisolutionoffice.atlassian.net/projects/HDP/issues
+
