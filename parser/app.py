@@ -86,10 +86,16 @@ try:
         logger.debug(json.dumps(parsed_data_message, indent=1))
         parsed_topic_name = os.getenv("KAFKA_PARSED_DATA_TOPIC_NAME")
         logging.info(f"Sending data to {parsed_topic_name}")
-        producer.send(
-            parsed_topic_name,
-            value=data_pack(parsed_data_message),
-        )
+
+        def on_send_success(record_metadata):
+            logger.info(record_metadata.topic)
+            logger.info(record_metadata.partition)
+            logger.info(record_metadata.offset)
+
+        def on_send_error(excp):
+            logger.error('Error on Kafka producer', exc_info=excp)
+
+        producer.send(parsed_topic_name, value=data_pack(parsed_data_message)).add_callback(on_send_success).add_errback(on_send_error)
 
 
 except Exception as e:

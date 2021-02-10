@@ -84,7 +84,16 @@ def catchall(path: str):
         return f"Request body too large (>{body_max_size}B)", 400
     topic_name = os.getenv("KAFKA_RAW_DATA_TOPIC_NAME")
     logging.info(f"Sending {endpoint_path} data to {topic_name}")
-    app.producer.send(topic_name, value=data_pack(data))
+
+    def on_send_success(record_metadata):
+        logging.info(record_metadata.topic)
+        logging.info(record_metadata.partition)
+        logging.info(record_metadata.offset)
+
+    def on_send_error(excp):
+        logging.error('Error on Kafka producer', exc_info=excp)
+
+    app.producer.send(topic_name, value=data_pack(data)).add_callback(on_send_success).add_errback(on_send_error)
     return "OK", 200
 
 
