@@ -54,7 +54,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: ["endpoint", "devices, "parser", "api", "persister"]
+        service: ["endpoint", "devices", "parser", "api", "persister"]
         include:
           - service: "endpoint"
             dir: "endpoint"
