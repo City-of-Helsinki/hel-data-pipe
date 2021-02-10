@@ -13,7 +13,7 @@ Production (master branch): https://api.heldatapipe.prod.kuva.hel.ninja/, https:
 ## Components
 
 - [Endpoint](https://github.com/City-of-Helsinki/hel-data-pipe/tree/develop/endpoint) - Flask API that receives data from IoT sensors and gateways, authenticates the requests and puts the data to the buffer for further processing as Kafka producer.
-- [Parser](https://github.com/City-of-Helsinki/hel-data-pipe/tree/develop/parser) - Kafka consumer that receives data (serialised HTTP requests) from a Kafka topic, parses the payload and then as Kafka producer puts the parsed data to another Kafka topic for further processing.
+- [Devices](https://github.com/City-of-Helsinki/hel-data-pipe/tree/develop/devices) - Kafka consumer that receives data (serialised HTTP requests) from a Kafka topic, parses the payload and then as Kafka producer puts the parsed data to another Kafka topic for further processing. Includes also device registry.
 - [Persister](https://github.com/City-of-Helsinki/hel-data-pipe/tree/develop/persister) - Kafka consumer that receives parsed data and stores it to database, Django admin interface for defining data sources and channels, Django API for providing access to stored data.
 
 ## Development with docker
@@ -44,6 +44,8 @@ docker-compose -f docker-compose.yml up
 
 - The project is now running:
   - IoT data input API at http://localhost:5000
+  - Device registry admin at http://localhost:8081/admin/
+  - Device registry API at http://localhost:8081
   - Persister admin at http://localhost:8080/admin/
   - Datasources API at http://localhost:8080/datasources/
 

@@ -4,3 +4,5 @@ djangorestframework
 drf-nested-routers
 git+https://github.com/ForumViriumHelsinki/FVHIoT-python.git#egg=fvhiot
 psycopg2-binary
+pytz
+python-dateutil
