@@ -13,23 +13,23 @@ from .topics import Topics
 # from parser.models import SensorType, Device
 
 
-def create_dataline(timestamp: datetime.datetime, data: dict):
+def create_data_field(timestamp, data):
     measurement = {"measurement": data}
     return [{"time": timestamp}, measurement]
 
-
-def create_meta(devid, timestamp, message, request_data):
+def create_meta_field(timestamp, devid):
     return {
         "timestamp.received": timestamp,
         "dev-id": devid,
         "dev-type": "Digital Matter Sensornode LoRaWAN",
         "trusted": True,
         "source": {
-            "sourcename": "Acme inc. Kafka",  # TODO: Placeholder
             "topic": os.environ["KAFKA_RAW_DATA_TOPIC_NAME"],
-            "endpoint": "/dummy-sensor/v2",  # TODO: placeholder
         },
     }
+
+def create_message(meta, dataline):
+    return {"meta": meta, "data": [dataline]}
 
 
 class Command(BaseCommand):
@@ -40,11 +40,13 @@ class Command(BaseCommand):
         open("/app/ready.txt", "w")
 
         for message in topics.raw_data:
-            message_value = data_unpack(message.value)
+            data = data_unpack(message.value)
+
+            logging.info(data)
 
             # Hard coded sensor network
             try:
-                network_data = DigitaLorawan(message_value["request"])
+                network_data = DigitaLorawan(data["request"])
             except Exception as e:
                 logging.error(e)
                 #TODO: store unknown data
@@ -53,13 +55,18 @@ class Command(BaseCommand):
             devid = network_data.device_id
             logging.info(f"Reveiced data from device id {devid}")
 
-            parsed_data = sensornode.parse_sensornode(
-                network_data.payload_hex, network_data.fport
-            )
+            try:
+                parsed_data = sensornode.parse_sensornode(
+                    network_data.payload_hex, network_data.fport
+                )
+            except Exception as e:
+                logging.error(e)
+                #TODO: store unknown data
+                continue
 
-            dataline = create_dataline(network_data.timestamp, parsed_data)
-            meta = create_meta(devid, network_data.timestamp, message_value, network_data.body_json)
-            parsed_data_message = {"meta": meta, "data": [dataline]}
+            meta = create_meta_field(network_data.timestamp, devid)
+            dataline = create_data_field(network_data.timestamp, parsed_data)
+            parsed_data_message = create_message(meta, dataline)
             logging.info(json.dumps(parsed_data_message, indent=1))
 
             parsed_topic_name = os.getenv("KAFKA_PARSED_DATA_TOPIC_NAME")
