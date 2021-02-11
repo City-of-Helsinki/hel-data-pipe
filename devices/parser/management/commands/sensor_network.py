@@ -1,30 +1,20 @@
-from abc import ABC, abstractmethod
 import json
-  
-
-class SensorNetworkMetaData(ABC):
-
-    @property
-    @abstractmethod
-    def device_id(self):
-        pass
-
-    @property
-    @abstractmethod
-    def body_as_json(self):
-        pass
+import pytz
+from dateutil.parser import parse
 
 
-class DigitaLorawan(SensorNetworkMetaData): 
-  
+class DigitaLorawan:
+    """ Expose relevant fields out of HTTP request """
+
     def __init__(self, request):
         self._request = request
+        self._parse()
 
-    @property
-    def device_id(self):
-        return self._request["get"].get("LrnDevEui")
-    
-    @property
-    def body_as_json(self):
-        request_body= self._request["body"]
-        return json.loads(request_body.decode())
+    def _parse(self):
+        self.device_id = self._request["get"].get("LrnDevEui")
+        self.body_json = json.loads(self._request["body"].decode())
+        self.ul = self.body_json["DevEUI_uplink"]
+        self.payload_hex = self.ul["payload_hex"]
+        self.fport = int(self.ul["FPort"])
+        self.time = self.ul["Time"]
+        self.timestamp = parse(self.time).astimezone(pytz.UTC).isoformat()
