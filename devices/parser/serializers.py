@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import SensorType, Device
+
+from .models import Device, SensorType
 
 
 class SensorTypeSerializer(serializers.ModelSerializer):
@@ -12,4 +13,3 @@ class DeviceSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Device
         fields = "__all__"
-

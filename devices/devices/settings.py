@@ -66,32 +66,30 @@ WSGI_APPLICATION = "devices.wsgi.application"
 
 
 LOGGING = {
-    'version': 1,
-    'formatters': {
-        'simple': {
-            'format': '%(levelname)s %(message)s'
+    "version": 1,
+    "formatters": {
+        "simple": {"format": "%(levelname)s %(message)s"},
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
     },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
-        },
-    },
-    'loggers': {
+    "loggers": {
         # Root logger
-        '': {
-            'handlers': ['console'],
-            'propagate': True,
-            'level': 'INFO',
+        "": {
+            "handlers": ["console"],
+            "propagate": True,
+            "level": "INFO",
         },
-        'django.request': {
-            'handlers': ['console'],
-            'propagate': False,
-            'level': 'ERROR',  # WARN also shows 404 errors
+        "django.request": {
+            "handlers": ["console"],
+            "propagate": False,
+            "level": "ERROR",  # WARN also shows 404 errors
         },
-    }
+    },
 }
 
 # Database
