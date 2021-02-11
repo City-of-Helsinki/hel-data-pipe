@@ -10,7 +10,7 @@ from fvhiot.utils.data import data_pack, data_unpack
 from .sensor_network import DigitaLorawan
 from .topics import Topics
 
-# from parser.models import SensorType, Device
+from parser.models import SensorType, Device
 
 
 def create_data_field(timestamp, data):
@@ -54,6 +54,17 @@ class Command(BaseCommand):
 
             devid = network_data.device_id
             logging.info(f"Reveiced data from device id {devid}")
+
+            registered_device = Device.objects.get(devid=devid)
+            if not registered_device:
+                logging.warning("Device not found, ID: {devid}")
+                #TODO: store unknown data
+                continue
+
+            logging.info(f"Found device {registered_device}")
+
+            sensortype = registered_device.sensortype
+            logging.info(f"{registered_device} has sensor type {sensortype.name} with parser {sensortype.parser}")
 
             try:
                 parsed_data = sensornode.parse_sensornode(
