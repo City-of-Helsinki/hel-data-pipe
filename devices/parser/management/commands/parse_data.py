@@ -16,11 +16,6 @@ from dateutil.parser import parse
 # group id to enable multiple parallel instances
 KAFKA_GROUP_ID = "parser"
 
-logging.basicConfig(stream=sys.stdout)
-
-logger = logging.getLogger("logger")
-logger.setLevel(logging.DEBUG if os.getenv("DEBUG") in [True, 1, "1"] else logging.INFO)
-
 
 def create_dataline(timestamp: datetime.datetime, data: dict):
     timestr = timestamp.astimezone(pytz.UTC).isoformat()
@@ -53,7 +48,7 @@ class Command(BaseCommand):
             ssl_certfile=os.getenv("KAFKA_ACCESS_CERT"),
             ssl_keyfile=os.getenv("KAFKA_ACCESS_KEY"),
         )
-        logger.debug(f"Listening to topic {topic}")
+        logging.info(f"Listening to topic {topic}")
 
         producer = KafkaProducer(
             bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS").split(","),
@@ -62,6 +57,7 @@ class Command(BaseCommand):
             ssl_certfile=os.getenv("KAFKA_ACCESS_CERT"),
             ssl_keyfile=os.getenv("KAFKA_ACCESS_KEY"),)
 
+        logging.info(f"Creating liveness file")
         # Kubernetes liveness check
         open("/app/ready.txt", "w")
 
@@ -69,15 +65,15 @@ class Command(BaseCommand):
             message_value = data_unpack(message.value)
             devid = message_value["request"]["get"].get("LrnDevEui")
             if devid is None:
-                logger.error("ERROR: no LrnDevEui in request! False request in Kafka?")
+                logging.error("ERROR: no LrnDevEui in request! False request in Kafka?")
                 continue
-            logger.info(f"Reveiced data from device id {devid}")
+            logging.info(f"Reveiced data from device id {devid}")
             request_body: bytes = message_value["request"]["body"]
             # TODO: catch json exceptions
             data = json.loads(request_body.decode())
             ul = data.get("DevEUI_uplink")
             if ul is None:
-                logger.warning("DevEUI_uplink exists no :-(")
+                logging.warning("DevEUI_uplink exists no :-(")
                 continue
             payload = ul["payload_hex"]
             port = int(ul["FPort"])
@@ -86,9 +82,9 @@ class Command(BaseCommand):
             dataline = create_dataline(timestamp, parsed_data)
             meta = create_meta(devid, timestamp, message_value, data)
             parsed_data_message = {"meta": meta, "data": [dataline]}
-            logger.debug(json.dumps(parsed_data_message, indent=1))
+            logging.debug(json.dumps(parsed_data_message, indent=1))
             parsed_topic_name = os.getenv("KAFKA_PARSED_DATA_TOPIC_NAME")
-            logger.info(f"Sending data to {parsed_topic_name}")
+            logging.info(f"Sending data to {parsed_topic_name}")
 
             producer.send(
                 parsed_topic_name,
