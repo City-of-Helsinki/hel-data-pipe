@@ -1,92 +1,99 @@
-import datetime
+import json
 import logging
 import os
-import json
-import pytz
-import sys
 
 from django.core.management.base import BaseCommand
-from fvhiot.utils.data import data_unpack, data_pack
-from fvhiot.parsers import sensornode
-from kafka import KafkaConsumer, KafkaProducer
-from dateutil.parser import parse
+from fvhiot.utils.data import data_pack, data_unpack
 
-#from parser.models import SensorType, Device
+from .sensor_network import DigitaLorawan
+from . import sensor
+from .topics import Topics
 
-# group id to enable multiple parallel instances
-KAFKA_GROUP_ID = "parser"
+from parser.models import SensorType, Device
 
 
-def create_dataline(timestamp: datetime.datetime, data: dict):
-    timestr = timestamp.astimezone(pytz.UTC).isoformat()
+def create_data_field(timestamp, data):
     measurement = {"measurement": data}
-    return [{"time": timestr}, measurement]
+    return [{"time": timestamp}, measurement]
 
-
-def create_meta(devid, timestamp, message, request_data):
+def create_meta_field(timestamp, devid, devtype):
     return {
-        "timestamp.received": timestamp.astimezone(pytz.UTC).isoformat(),
+        "timestamp.received": timestamp,
         "dev-id": devid,
-        "dev-type": "Digital Matter Sensornode LoRaWAN",
+        "dev-type": devtype,
         "trusted": True,
         "source": {
-            "sourcename": "Acme inc. Kafka",  # TODO: Placeholder
             "topic": os.environ["KAFKA_RAW_DATA_TOPIC_NAME"],
-            "endpoint": "/dummy-sensor/v2",  # TODO: placeholder
         },
     }
 
+def create_message(meta, dataline):
+    return {"meta": meta, "data": [dataline]}
+
+
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        topic = os.environ.get("KAFKA_RAW_DATA_TOPIC_NAME")
-        consumer = KafkaConsumer(
-            topic,
-            group_id=KAFKA_GROUP_ID,
-            bootstrap_servers=os.environ["KAFKA_BOOTSTRAP_SERVERS"].split(","),
-            security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
-            ssl_cafile=os.getenv("KAFKA_CA"),
-            ssl_certfile=os.getenv("KAFKA_ACCESS_CERT"),
-            ssl_keyfile=os.getenv("KAFKA_ACCESS_KEY"),
-        )
-        logging.info(f"Listening to topic {topic}")
+        topics = Topics()
 
-        producer = KafkaProducer(
-            bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS").split(","),
-            security_protocol=os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"),
-            ssl_cafile=os.getenv("KAFKA_CA"),
-            ssl_certfile=os.getenv("KAFKA_ACCESS_CERT"),
-            ssl_keyfile=os.getenv("KAFKA_ACCESS_KEY"),)
-
-        logging.info(f"Creating liveness file")
         # Kubernetes liveness check
         open("/app/ready.txt", "w")
 
-        for message in consumer:
-            message_value = data_unpack(message.value)
-            devid = message_value["request"]["get"].get("LrnDevEui")
-            if devid is None:
-                logging.error("ERROR: no LrnDevEui in request! False request in Kafka?")
+        for message in topics.raw_data:
+            data = data_unpack(message.value)
+
+            logging.info(data)
+
+            # Hard coded sensor network
+            try:
+                network_data = DigitaLorawan(data["request"])
+            except Exception as e:
+                logging.error(e)
+                # TODO: store unknown data, not valid network_data
                 continue
+
+            devid = network_data.device_id
             logging.info(f"Reveiced data from device id {devid}")
-            request_body: bytes = message_value["request"]["body"]
-            # TODO: catch json exceptions
-            data = json.loads(request_body.decode())
-            ul = data.get("DevEUI_uplink")
-            if ul is None:
-                logging.warning("DevEUI_uplink exists no :-(")
+
+            registered_device = Device.objects.get(devid=devid)
+            if not registered_device:
+                logging.warning("Device not found, ID: {devid}")
+                # TODO: store unknown data, device not found
+
+                # TODO: uncomment after the device registry is configured, to skip unknown devices
+                #continue
+
+            logging.info(f"Found device {registered_device}")
+
+            sensortype = registered_device.sensortype
+            logging.info(f"{registered_device} has sensor type {sensortype.name} with parser {sensortype.parser}")
+
+            parser = sensor.get_parser(sensortype.parser)
+
+            # TODO: This is temporarily overwritten, later device registry sets parser for each device
+            parser = sensor.get_parser("sensornode")
+
+            if not parser:
+                logging.warning(f"Parser {sensortype.parser} not found for device {devid}")
+                # TODO: store unknown data, parser not found
                 continue
-            payload = ul["payload_hex"]
-            port = int(ul["FPort"])
-            parsed_data = sensornode.parse_sensornode(payload, port)
-            timestamp = parse(ul["Time"]).astimezone(pytz.UTC)
-            dataline = create_dataline(timestamp, parsed_data)
-            meta = create_meta(devid, timestamp, message_value, data)
-            parsed_data_message = {"meta": meta, "data": [dataline]}
-            logging.debug(json.dumps(parsed_data_message, indent=1))
+
+            try:
+                parsed_data = parser.parse_payload(network_data.payload)
+            except Exception as e:
+                logging.error("Hex payload parser failed for device ID {devid}")
+                logging.error(e)
+                # TODO: store unknown data, error in hex payload parsing
+                continue
+
+            meta = create_meta_field(network_data.timestamp, devid, network_data.devtype)
+            dataline = create_data_field(network_data.timestamp, parsed_data)
+            parsed_data_message = create_message(meta, dataline)
+            logging.info(json.dumps(parsed_data_message, indent=1))
+
             parsed_topic_name = os.getenv("KAFKA_PARSED_DATA_TOPIC_NAME")
             logging.info(f"Sending data to {parsed_topic_name}")
 
-            producer.send(
+            topics.send_to_parsed_data(
                 parsed_topic_name,
                 value=data_pack(parsed_data_message),
             )

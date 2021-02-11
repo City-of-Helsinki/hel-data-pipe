@@ -1,6 +1,6 @@
-from django.contrib import admin
+from parser.models import Device, SensorType
 
-from parser.models import SensorType, Device
+from django.contrib import admin
 
 
 # Proper formatting for timestamps instead of "Oct. 27, 2020, 2:58 p.m." nonsense
