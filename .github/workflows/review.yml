@@ -148,9 +148,7 @@ jobs:
         env:
           SECRET_KEY: ${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}
         run: |
-          echo "K8S_SECRET_CONSUMER=${{ matrix.CONSUMER }}" >> $GITHUB_ENV
-          echo "K8S_SECRET_APPLY_MIGRATIONS=${{ matrix.APPLY_MIGRATIONS }}" >> $GITHUB_ENV
-          echo "K8S_SECRET_INITIALIZE_DATA=${{ matrix.INITIALIZE_DATA }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_ALLOWED_HOSTS=*" >> $GITHUB_ENV
           echo "K8S_SECRET_SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
 
       - name: Parser settings
@@ -158,7 +156,9 @@ jobs:
         env:
           SECRET_KEY: ${{ secrets.K8S_SECRET_SECRET_KEY_REVIEW }}
         run: |
-          echo "K8S_SECRET_ALLOWED_HOSTS=*" >> $GITHUB_ENV
+          echo "K8S_SECRET_PARSER=${{ matrix.PARSER }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_APPLY_MIGRATIONS=${{ matrix.APPLY_MIGRATIONS }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_INITIALIZE_DATA=${{ matrix.INITIALIZE_DATA }}" >> $GITHUB_ENV
           echo "K8S_SECRET_SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
 
       - name: Persister settings
