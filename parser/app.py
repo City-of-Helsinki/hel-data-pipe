@@ -78,7 +78,11 @@ try:
             continue
         payload = ul["payload_hex"]
         port = int(ul["FPort"])
-        parsed_data = sensornode.parse_sensornode(payload, port)
+        try:
+            parsed_data = sensornode.parse_sensornode(payload, port)
+        except Exception as e:
+            logging.error(e)
+            continue
         timestamp = parse(ul["Time"]).astimezone(pytz.UTC)
         dataline = create_dataline(timestamp, parsed_data)
         meta = create_meta(devid, timestamp, message_value, data)
