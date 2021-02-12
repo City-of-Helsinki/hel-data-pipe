@@ -15,14 +15,28 @@ services:
     restart: always
     volumes:
       - ./endpoint:/app
+  devices:
+    <<: *base
+    build:
+      context: ./devices
+      target: development
+    ports:
+      - "8081:8080"
+    restart: always
+    volumes:
+      - ./devices:/app
   parser:
     <<: *base
     build:
-      context: ./parser
+      context: ./devices
       target: development
+    environment:
+      PARSER: 1
+      APPLY_MIGRATIONS: 1
+      INITIALIZE_DATA: 1
     restart: always
     volumes:
-      - ./parser:/app
+      - ./devices:/app
   api:
     <<: *base
     build:

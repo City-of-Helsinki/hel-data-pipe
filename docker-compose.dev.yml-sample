@@ -8,6 +8,9 @@ services:
     depends_on:
       - zookeeper
       - kafka
+  devices:
+    depends_on:
+      - db
   persister:
     depends_on:
       - zookeeper

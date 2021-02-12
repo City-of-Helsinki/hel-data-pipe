@@ -3,4 +3,5 @@ include:
     ref: v2
     file: "/.gitlab-ci-base-template.yml"
   - "/endpoint/.gitlab-ci.yml"
+  - "/devices/.gitlab-ci.yml"
   - "/persister/.gitlab-ci.yml"

@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: ["endpoint", "parser", "persister"]
+        service: ["endpoint", "devices", "persister"]
 
     runs-on: ubuntu-latest
     name: Build ${{ matrix.service }}
@@ -41,23 +41,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: ["endpoint", "parser", "api", "persister"]
+        service: ["endpoint", "devices", "parser", "api", "persister"]
         include:
-          - service: "parser"
-            dir: "parser"
-            K8S_LIVENESS_FILE: /app/ready.txt
-            K8S_READINESS_FILE: /app/ready.txt
-            ENABLE_KAFKA: true
           - service: "endpoint"
             dir: "endpoint"
             SERVICE_PORT: "5000"
             ENABLE_KAFKA: true
+          - service: "parser"
+            dir: "devices"
+            ENABLE_DB: true
+            ENABLE_KAFKA: true
+            K8S_LIVENESS_FILE: /app/ready.txt
+            K8S_READINESS_FILE: /app/ready.txt
+            PARSER: 1
+            APPLY_MIGRATIONS: 1
+            INITIALIZE_DATA: 1
+          - service: "devices"
+            dir: "devices"
+            SERVICE_PORT: "8080"
+            ENABLE_DB: true
           - service: "api"
-            dir: persister
+            dir: "persister"
             SERVICE_PORT: "8080"
             ENABLE_DB: true
           - service: "persister"
-            dir: persister
+            dir: "persister"
             ENABLE_DB: true
             ENABLE_KAFKA: true
             K8S_LIVENESS_FILE: /app/ready.txt
@@ -120,6 +128,24 @@ jobs:
           echo "K8S_LIVENESS_FILE=/app/ready.txt" >> $GITHUB_ENV
           echo "K8S_READINESS_FILE=/app/ready.txt" >> $GITHUB_ENV
           echo "K8S_INGRESS_DISABLED=True" >> $GITHUB_ENV
+
+      - name: Devices settings
+        if: matrix.service == 'devices'
+        env:
+          SECRET_KEY: ${{ secrets.K8S_SECRET_SECRET_KEY_STAGING }}
+        run: |
+          echo "K8S_SECRET_ALLOWED_HOSTS=*" >> $GITHUB_ENV
+          echo "K8S_SECRET_SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
+
+      - name: Parser settings
+        if: matrix.service == 'parser'
+        env:
+          SECRET_KEY: ${{ secrets.K8S_SECRET_SECRET_KEY_STAGING }}
+        run: |
+          echo "K8S_SECRET_PARSER=${{ matrix.PARSER }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_APPLY_MIGRATIONS=${{ matrix.APPLY_MIGRATIONS }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_INITIALIZE_DATA=${{ matrix.INITIALIZE_DATA }}" >> $GITHUB_ENV
+          echo "K8S_SECRET_SECRET_KEY=$SECRET_KEY" >> $GITHUB_ENV
 
       - name: Persister settings
         if: matrix.service == 'persister'

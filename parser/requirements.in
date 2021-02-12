@@ -1,4 +1,0 @@
-certifi
-pytz
-git+https://github.com/ForumViriumHelsinki/FVHIoT-python.git#egg=fvhiot
-python-dateutil
