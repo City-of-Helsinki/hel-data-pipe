@@ -91,9 +91,11 @@ def catchall(path: str):
         logging.info(record_metadata.offset)
 
     def on_send_error(excp):
-        logging.error('Error on Kafka producer', exc_info=excp)
+        logging.error("Error on Kafka producer", exc_info=excp)
 
-    app.producer.send(topic_name, value=data_pack(data)).add_callback(on_send_success).add_errback(on_send_error)
+    app.producer.send(topic_name, value=data_pack(data)).add_callback(
+        on_send_success
+    ).add_errback(on_send_error)
     return "OK", 200
 
 
