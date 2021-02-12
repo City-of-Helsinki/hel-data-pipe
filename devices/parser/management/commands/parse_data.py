@@ -41,8 +41,6 @@ class Command(BaseCommand):
         for message in topics.raw_data:
             data = data_unpack(message.value)
 
-            logging.info(data)
-
             # Hard coded sensor network
             try:
                 network_data = DigitaLorawan(data["request"])
@@ -54,23 +52,24 @@ class Command(BaseCommand):
             devid = network_data.device_id
             logging.info(f"Reveiced data from device id {devid}")
 
-            registered_device = Device.objects.get(devid=devid)
+            try:
+                registered_device = Device.objects.get(devid=devid)
+            except Device.DoesNotExist:
+                registered_device = None
+
             if not registered_device:
-                logging.warning("Device not found, ID: {devid}")
+                logging.warning(f"Device not found, ID: {devid}")
                 # TODO: store unknown data, device not found
+                # TODO: Use default parser temporarily
+                parser = sensor.get_parser("sensornode")
 
                 # TODO: uncomment after the device registry is configured, to skip unknown devices
                 #continue
-
-            logging.info(f"Found device {registered_device}")
-
-            sensortype = registered_device.sensortype
-            logging.info(f"{registered_device} has sensor type {sensortype.name} with parser {sensortype.parser}")
-
-            parser = sensor.get_parser(sensortype.parser)
-
-            # TODO: This is temporarily overwritten, later device registry sets parser for each device
-            parser = sensor.get_parser("sensornode")
+            else:
+                logging.debug(f"Found device: {registered_device}")
+                sensortype = registered_device.sensortype
+                logging.debug(f"{registered_device} has sensor type {sensortype.name} with parser {sensortype.parser}")
+                parser = sensor.get_parser(sensortype.parser)
 
             if not parser:
                 logging.warning(f"Parser {sensortype.parser} not found for device {devid}")
@@ -88,7 +87,7 @@ class Command(BaseCommand):
             meta = create_meta_field(network_data.timestamp, devid, network_data.devtype)
             dataline = create_data_field(network_data.timestamp, parsed_data)
             parsed_data_message = create_message(meta, dataline)
-            logging.info(json.dumps(parsed_data_message, indent=1))
+            logging.debug(json.dumps(parsed_data_message, indent=1))
 
             parsed_topic_name = os.getenv("KAFKA_PARSED_DATA_TOPIC_NAME")
             logging.info(f"Sending data to {parsed_topic_name}")
