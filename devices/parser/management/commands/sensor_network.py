@@ -23,3 +23,4 @@ class DigitaLorawan:
 
         self.time = self.ul["Time"]
         self.timestamp = parse(self.time).astimezone(pytz.UTC).isoformat()
+        self.devtype = "Digital Matter Sensornode LoRaWAN"

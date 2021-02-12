@@ -16,11 +16,11 @@ def create_data_field(timestamp, data):
     measurement = {"measurement": data}
     return [{"time": timestamp}, measurement]
 
-def create_meta_field(timestamp, devid):
+def create_meta_field(timestamp, devid, devtype):
     return {
         "timestamp.received": timestamp,
         "dev-id": devid,
-        "dev-type": "Digital Matter Sensornode LoRaWAN",
+        "dev-type": devtype,
         "trusted": True,
         "source": {
             "topic": os.environ["KAFKA_RAW_DATA_TOPIC_NAME"],
@@ -85,7 +85,7 @@ class Command(BaseCommand):
                 # TODO: store unknown data, error in hex payload parsing
                 continue
 
-            meta = create_meta_field(network_data.timestamp, devid)
+            meta = create_meta_field(network_data.timestamp, devid, network_data.devtype)
             dataline = create_data_field(network_data.timestamp, parsed_data)
             parsed_data_message = create_message(meta, dataline)
             logging.info(json.dumps(parsed_data_message, indent=1))
