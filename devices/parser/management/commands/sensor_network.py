@@ -16,5 +16,10 @@ class DigitaLorawan:
         self.ul = self.body_json["DevEUI_uplink"]
         self.payload_hex = self.ul["payload_hex"]
         self.fport = int(self.ul["FPort"])
+
+        # Po parse payload, both payload_hex and fport are required.
+        # To make parser generic, expose these via single payload attribute.
+        self.payload = {"payload_hex": self.payload_hex, "fport": self.fport}
+
         self.time = self.ul["Time"]
         self.timestamp = parse(self.time).astimezone(pytz.UTC).isoformat()

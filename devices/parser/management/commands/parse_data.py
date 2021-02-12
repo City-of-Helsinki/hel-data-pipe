@@ -1,13 +1,12 @@
-import datetime
 import json
 import logging
 import os
 
 from django.core.management.base import BaseCommand
-from fvhiot.parsers import sensornode
 from fvhiot.utils.data import data_pack, data_unpack
 
 from .sensor_network import DigitaLorawan
+from . import sensor
 from .topics import Topics
 
 from parser.models import SensorType, Device
@@ -49,7 +48,7 @@ class Command(BaseCommand):
                 network_data = DigitaLorawan(data["request"])
             except Exception as e:
                 logging.error(e)
-                #TODO: store unknown data
+                # TODO: store unknown data, not valid network_data
                 continue
 
             devid = network_data.device_id
@@ -58,21 +57,32 @@ class Command(BaseCommand):
             registered_device = Device.objects.get(devid=devid)
             if not registered_device:
                 logging.warning("Device not found, ID: {devid}")
-                #TODO: store unknown data
-                continue
+                # TODO: store unknown data, device not found
+
+                # TODO: uncomment after the device registry is configured, to skip unknown devices
+                #continue
 
             logging.info(f"Found device {registered_device}")
 
             sensortype = registered_device.sensortype
             logging.info(f"{registered_device} has sensor type {sensortype.name} with parser {sensortype.parser}")
 
+            parser = sensor.get_parser(sensortype.parser)
+
+            # TODO: This is temporarily overwritten, later device registry sets parser for each device
+            parser = sensor.get_parser("sensornode")
+
+            if not parser:
+                logging.warning(f"Parser {sensortype.parser} not found for device {devid}")
+                # TODO: store unknown data, parser not found
+                continue
+
             try:
-                parsed_data = sensornode.parse_sensornode(
-                    network_data.payload_hex, network_data.fport
-                )
+                parsed_data = parser.parse_payload(network_data.payload)
             except Exception as e:
+                logging.error("Hex payload parser failed for device ID {devid}")
                 logging.error(e)
-                #TODO: store unknown data
+                # TODO: store unknown data, error in hex payload parsing
                 continue
 
             meta = create_meta_field(network_data.timestamp, devid)
