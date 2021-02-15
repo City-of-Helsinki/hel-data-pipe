@@ -166,12 +166,10 @@ def save_data(message):
         time = None
         for items in data:
             if "time" in items:
-                # read the time entry for the measurements
-                print("Reading time for the measurements")
                 time = items["time"]
+                print(f"Measurement time: {time}")
             elif "measurement" in items:
                 # save all the measurements
-                print("Reading measurements")
                 measurement = items["measurement"]
-                for key in measurement:
+                for key in measurement or []:
                     save_measurement(datasource, key, measurement, time)
