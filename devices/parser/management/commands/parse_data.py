@@ -9,7 +9,7 @@ from .sensor_network import DigitaLorawan
 from . import sensor
 from .topics import Topics
 
-from parser.models import SensorType, Device
+from parser.models import SensorType, Device, RawMessage, RAW_MESSAGE_STATUS
 
 
 def create_data_field(timestamp, data):
@@ -46,7 +46,8 @@ class Command(BaseCommand):
                 network_data = DigitaLorawan(data["request"])
             except Exception as e:
                 logging.error(e)
-                # TODO: store unknown data, not valid network_data
+                unknown_message = RawMessage(data=message, status=RAW_MESSAGE_STATUS.NW_DATA_ERROR)
+                unknown_message.save()
                 continue
 
             devid = network_data.device_id
@@ -59,13 +60,13 @@ class Command(BaseCommand):
 
             if not registered_device:
                 logging.warning(f"Device not found, ID: {devid}")
-                # TODO: store unknown data, device not found
-                # TODO: Use default parser temporarily
+
                 logging.warning(f"Using default parser: sensornode")
                 parser = sensor.get_parser("sensornode")
 
-                # TODO: uncomment after the device registry is configured, to skip unknown devices
-                #continue
+                unknown_message = RawMessage(data=message, status=RAW_MESSAGE_STATUS.DEVICE_ID_NOT_FOUND, devid=devid)
+                unknown_message.save()
+                continue
             else:
                 logging.debug(f"Found device: {registered_device}")
                 sensortype = registered_device.sensortype
@@ -74,7 +75,8 @@ class Command(BaseCommand):
 
             if not parser:
                 logging.warning(f"Parser {sensortype.parser} not found for device {devid}")
-                # TODO: store unknown data, parser not found
+                unknown_message = RawMessage(data=message, status=RAW_MESSAGE_STATUS.PARSER_NOT_FOUND, devid=devid)
+                unknown_message.save()
                 continue
 
             try:
@@ -82,7 +84,8 @@ class Command(BaseCommand):
             except Exception as e:
                 logging.error(f"Hex payload parser failed for device ID {devid}")
                 logging.error(e)
-                # TODO: store unknown data, error in hex payload parsing
+                unknown_message = RawMessage(data=message, status=RAW_MESSAGE_STATUS.PARSER_ERROR, devid=devid)
+                unknown_message.save()
                 continue
 
             meta = create_meta_field(network_data.timestamp, devid, network_data.devtype)

@@ -1,4 +1,4 @@
-from parser.models import Device, SensorType
+from parser.models import Device, SensorType, RawMessage
 
 from django.contrib import admin
 
@@ -28,5 +28,10 @@ class DeviceAdmin(admin.ModelAdmin):
     list_display = ("devid", "name", created_iso)
 
 
+class RawMessageAdmin(admin.ModelAdmin):
+    list_display = ("devid", "status", created_iso)
+
+
 admin.site.register(SensorType, SensorTypeAdmin)
 admin.site.register(Device, DeviceAdmin)
+admin.site.register(RawMessage, RawMessageAdmin)
