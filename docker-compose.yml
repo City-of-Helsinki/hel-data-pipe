@@ -1,0 +1,61 @@
+version: "3.7"
+
+x-base: &base
+  env_file:
+    - .env
+
+services:
+  endpoint:
+    <<: *base
+    build:
+      context: ./endpoint
+      target: development
+    ports:
+      - "5000:5000"
+    restart: always
+    volumes:
+      - ./endpoint:/app
+  devices:
+    <<: *base
+    build:
+      context: ./devices
+      target: development
+    ports:
+      - "8081:8080"
+    restart: always
+    volumes:
+      - ./devices:/app
+  parser:
+    <<: *base
+    build:
+      context: ./devices
+      target: development
+    environment:
+      PARSER: 1
+      APPLY_MIGRATIONS: 1
+      INITIALIZE_DATA: 1
+    restart: always
+    volumes:
+      - ./devices:/app
+  api:
+    <<: *base
+    build:
+      context: ./persister
+      target: development
+    ports:
+      - "8080:8080"
+    restart: always
+    volumes:
+      - ./persister:/app
+  persister:
+    <<: *base
+    build:
+      context: ./persister
+      target: development
+    environment:
+      CONSUMER: 1
+      APPLY_MIGRATIONS: 1
+      INITIALIZE_DATA: 1
+    restart: always
+    volumes:
+      - ./persister/:/app/

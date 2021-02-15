@@ -1,0 +1,54 @@
+[
+   {
+      "fields" : {
+         "updated_at" : "2020-11-18T11:26:46.021Z",
+         "created_at" : "2020-11-18T11:22:14.877Z",
+         "name" : "temperature",
+         "symbol" : "°C",
+         "abbreviation" : "temp",
+         "urls" : "https://www.wikidata.org/wiki/Q11466",
+         "description" : "temperature in celcius degrees"
+      },
+      "pk" : 1,
+      "model" : "observations.quantity"
+   },
+   {
+      "model" : "observations.quantity",
+      "pk" : 2,
+      "fields" : {
+         "created_at" : "2020-11-18T11:24:17.992Z",
+         "name" : "relative humidity",
+         "symbol" : "%",
+         "abbreviation" : "HR",
+         "description" : "amount of water vapor in the air",
+         "urls" : "https://www.wikidata.org/wiki/Q180600",
+         "updated_at" : "2020-11-18T11:24:17.992Z"
+      }
+   },
+   {
+      "pk" : 3,
+      "fields" : {
+         "updated_at" : "2020-11-18T11:33:29.955Z",
+         "abbreviation" : "press",
+         "symbol" : "hPa",
+         "description" : "the pressure within the atmosphere of Earth (barometric pressure)",
+         "urls" : "https://en.wikipedia.org/wiki/Atmospheric_pressure",
+         "name" : "atmospheric pressure",
+         "created_at" : "2020-11-18T11:33:29.955Z"
+      },
+      "model" : "observations.quantity"
+   },
+   {
+      "model" : "observations.quantity",
+      "pk" : 4,
+      "fields" : {
+         "updated_at" : "2020-11-18T11:34:50.007Z",
+         "name" : "conductivity",
+         "created_at" : "2020-11-18T11:34:50.007Z",
+         "description" : "Conductivity (or specific conductance) of an electrolyte solution is a measure of its ability to conduct electricity. The SI unit of conductivity is Siemens per meter (S/m).",
+         "urls" : "https://en.wikipedia.org/wiki/Conductivity_(electrolytic)",
+         "symbol" : "μS/cm",
+         "abbreviation" : "cond"
+      }
+   }
+]
