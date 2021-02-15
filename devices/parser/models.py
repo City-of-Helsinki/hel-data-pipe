@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from parser.management.commands import sensor
+
 
 class SensorType(models.Model):
     """
@@ -14,8 +16,10 @@ class SensorType(models.Model):
         blank=True, editable=True, verbose_name=_("Description")
     )
     parser = models.CharField(
-        max_length=100, blank=True, editable=True, verbose_name=_("Parser")
+        max_length=100, blank=True, verbose_name=_("Parser"),
+        choices=sensor.get_parser_choices()
     )
+
     created_at = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     updated_at = models.DateTimeField(null=False, blank=False, auto_now=True)
 

@@ -61,6 +61,7 @@ class Command(BaseCommand):
                 logging.warning(f"Device not found, ID: {devid}")
                 # TODO: store unknown data, device not found
                 # TODO: Use default parser temporarily
+                logging.warning(f"Using default parser: sensornode")
                 parser = sensor.get_parser("sensornode")
 
                 # TODO: uncomment after the device registry is configured, to skip unknown devices
@@ -79,7 +80,7 @@ class Command(BaseCommand):
             try:
                 parsed_data = parser.parse_payload(network_data.payload)
             except Exception as e:
-                logging.error("Hex payload parser failed for device ID {devid}")
+                logging.error(f"Hex payload parser failed for device ID {devid}")
                 logging.error(e)
                 # TODO: store unknown data, error in hex payload parsing
                 continue
