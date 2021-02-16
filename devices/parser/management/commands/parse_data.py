@@ -50,7 +50,6 @@ def process_message(packed):
     """ Process single packed raw message. """
 
     data = data_unpack(packed)
-    print(data)
 
     # Hard coded sensor network
     try:

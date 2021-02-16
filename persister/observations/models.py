@@ -1,7 +1,6 @@
 from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
-
-# UGH fdsakjkfasjdfk ladsjfkl dsajfklasdjf ladsfj asklfjadskl jfaslfj salkfajs dklfasjf kladsjfkl sjflkas
+import logging
 
 
 class Datasourcetype(models.Model):
@@ -142,11 +141,11 @@ def save_measurement(datasource, key, measurement, time):
     try:
         channel = datasource.channels.get(uniquename=key)
     except Channel.DoesNotExist:
-        print(
+        logging.debug(
             f"Channel {key} not found for datasource {datasource.name}, creating channel {key}"
         )
         channel = Channel.objects.create(datasource=datasource, uniquename=key)
-    print(f"Creating value {measurement[key]} to channel {channel.uniquename}")
+    logging.debug(f"Creating value {measurement[key]} to channel {channel.uniquename}")
     Value.objects.create(channel=channel, time=time, value=measurement[key])
 
 
@@ -158,16 +157,15 @@ def save_data(message):
     try:
         datasource = datasourcetype.datasources.get(devid=devid)
     except Datasource.DoesNotExist:
-        print(f"Creating new datasource {devid}")
+        logging.debug(f"Creating new datasource {devid}")
         datasource = Datasource(devid=devid, datasourcetype=datasourcetype)
         datasource.save()
-        print("Created new datasource")
     for data in message["data"]:
         time = None
         for items in data:
             if "time" in items:
                 time = items["time"]
-                print(f"Measurement time: {time}")
+                logging.debug(f"Measurement time: {time}")
             elif "measurement" in items:
                 # save all the measurements
                 measurement = items["measurement"]
