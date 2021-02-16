@@ -31,6 +31,7 @@ class DeviceAdmin(admin.ModelAdmin):
 
 class RawMessageAdmin(admin.ModelAdmin):
     list_display = (created_iso, "devid", "status")
+    readonly_fields = ('status',)
 
     def reprocess(modeladmin, request, queryset):
         """ Action function for reprocessing messages. """

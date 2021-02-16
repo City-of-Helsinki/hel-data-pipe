@@ -12,7 +12,9 @@ from .topics import Topics
 from parser.models import SensorType, Device, RawMessage, RAW_MESSAGE_STATUS
 
 
-TOPICS = Topics()
+# Keep Kafka connection alive
+if not os.environ.get("COLLECTSTATIC", None):
+    TOPICS = Topics()
 
 
 def create_data_field(timestamp, data):
@@ -46,6 +48,17 @@ def process_message(packed):
         logging.error(f"Message can't be processed, status: {RAW_MESSAGE_STATUS.NW_DATA_ERROR}")
         RawMessage.objects.create(data=data_pack(data), status=RAW_MESSAGE_STATUS.NW_DATA_ERROR)
         return
+
+    print(data["request"]["body"])
+    if isinstance(data, bytes):
+        print("data is bytes")
+    else:
+        print("data string")
+
+    if isinstance(data["request"]["body"], bytes):
+        print("Body payload is bytes")
+    else:
+        print("Body payload string")
 
     devid = network_data.device_id
     logging.info(f"Reveiced data from device id {devid}")

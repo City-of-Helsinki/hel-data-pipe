@@ -1,5 +1,4 @@
-from fvhiot.parsers import sensornode
-#from fvhiot.parsers import ultrasonic
+from fvhiot.parsers import sensornode, dlmbx
 
 
 class UltrasonicParser:
@@ -7,9 +6,7 @@ class UltrasonicParser:
         pass
 
     def _parse_payload_hex(self, payload, port):
-        # TODO !!!
-        return None
-        #return sensornode.parse_sensornode(payload, port)
+        return dlmbx.decode_hex(payload, port)
 
     def parse_payload(self, payload):
         """ This is common parsing method, implemented by all parsers. """
@@ -22,7 +19,7 @@ class SensornodeParser:
         pass
 
     def _parse_payload_hex(self, payload, port):
-        return sensornode.parse_sensornode(payload, port)
+        return sensornode.decode_hex(payload, port)
 
     def parse_payload(self, payload):
         """ This is common parsing method, implemented by all parsers. """
@@ -33,7 +30,7 @@ class SensornodeParser:
 # Available parsers. "name" field corresponds to "Parser" field in sensor types admin panel.
 PARSERS = [
     { "name": "sensornode", "parser": SensornodeParser() },
-    { "name": "ultrasonic", "parser": UltrasonicParser() },
+    { "name": "dlmbx", "parser": UltrasonicParser() },
 ]
 
 
