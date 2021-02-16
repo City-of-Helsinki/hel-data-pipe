@@ -70,7 +70,7 @@ class RawMessage(models.Model):
 
     created_at = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     updated_at = models.DateTimeField(null=False, blank=False, auto_now=True)
-    data = models.TextField(blank=True, editable=True, verbose_name=_("Raw data"))
+    data = models.BinaryField(blank=True, editable=True, verbose_name=_("Raw data"))
     status =  models.CharField(
         max_length=100, blank=True, choices=RAW_MESSAGE_STATUS.choices)
 

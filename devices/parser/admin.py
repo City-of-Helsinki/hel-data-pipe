@@ -1,4 +1,5 @@
 from parser.models import Device, SensorType, RawMessage
+from parser.management.commands import parse_data
 
 from django.contrib import admin
 
@@ -29,8 +30,19 @@ class DeviceAdmin(admin.ModelAdmin):
 
 
 class RawMessageAdmin(admin.ModelAdmin):
-    list_display = ("devid", "status", created_iso)
+    list_display = (created_iso, "devid", "status")
 
+    def reprocess(modeladmin, request, queryset):
+        """ Action function for reprocessing messages. """
+        for message in queryset:
+            print("status" + message.status)
+            parse_data.process_message(message.data)
+
+    reprocess.short_description = "Reprocess messages through parser"
+    actions = [reprocess]
+
+    # TODO: Exclude temporarily to prevent crashing due to binascii.Error: Incorrect padding
+    exclude = ('data',)
 
 admin.site.register(SensorType, SensorTypeAdmin)
 admin.site.register(Device, DeviceAdmin)
