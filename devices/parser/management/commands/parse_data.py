@@ -3,6 +3,7 @@ import logging
 import os
 
 from django.core.management.base import BaseCommand
+from flask.helpers import get_flashed_messages
 from fvhiot.utils.data import data_pack, data_unpack
 
 from .sensor_network import DigitaLorawan
@@ -35,10 +36,21 @@ def create_meta_field(timestamp, devid, devtype):
 def create_message(meta, dataline):
     return {"meta": meta, "data": [dataline]}
 
+def message_to_str(message):
+    """ Convert message to string """
+
+    # body may be bytes
+    if isinstance(message["request"]["body"], bytes):
+        message["request"]["body"] = message["request"]["body"].decode()
+
+    return message
+
+
 def process_message(packed):
     """ Process single packed raw message. """
 
     data = data_unpack(packed)
+    print(data)
 
     # Hard coded sensor network
     try:
@@ -46,19 +58,8 @@ def process_message(packed):
     except Exception as e:
         logging.error(e)
         logging.error(f"Message can't be processed, status: {RAW_MESSAGE_STATUS.NW_DATA_ERROR}")
-        RawMessage.objects.create(data=data_pack(data), status=RAW_MESSAGE_STATUS.NW_DATA_ERROR)
+        RawMessage.objects.create(data=data_pack(data), json_data=message_to_str(data), status=RAW_MESSAGE_STATUS.NW_DATA_ERROR)
         return
-
-    print(data["request"]["body"])
-    if isinstance(data, bytes):
-        print("data is bytes")
-    else:
-        print("data string")
-
-    if isinstance(data["request"]["body"], bytes):
-        print("Body payload is bytes")
-    else:
-        print("Body payload string")
 
     devid = network_data.device_id
     logging.info(f"Reveiced data from device id {devid}")
@@ -75,7 +76,7 @@ def process_message(packed):
         parser = sensor.get_parser("sensornode")
 
         logging.error(f"Message can't be processed, status: {RAW_MESSAGE_STATUS.DEVICE_ID_NOT_FOUND}")
-        RawMessage.objects.create(data=data_pack(data), status=RAW_MESSAGE_STATUS.DEVICE_ID_NOT_FOUND, devid=devid)
+        RawMessage.objects.create(data=data_pack(data), json_data=message_to_str(data), status=RAW_MESSAGE_STATUS.DEVICE_ID_NOT_FOUND, devid=devid)
         return
     else:
         logging.debug(f"Found device: {registered_device}")
@@ -86,7 +87,7 @@ def process_message(packed):
     if not parser:
         logging.warning(f"Parser {sensortype.parser} not found for device {devid}")
         logging.error(f"Message can't be processed, status: {RAW_MESSAGE_STATUS.PARSER_NOT_FOUND}")
-        RawMessage.objects.create(data=data_pack(data), status=RAW_MESSAGE_STATUS.PARSER_NOT_FOUND, devid=devid)
+        RawMessage.objects.create(data=data_pack(data), json_data=message_to_str(data), status=RAW_MESSAGE_STATUS.PARSER_NOT_FOUND, devid=devid)
         return
 
     try:
@@ -95,7 +96,7 @@ def process_message(packed):
         logging.error(f"Hex payload parser failed for device ID {devid}")
         logging.error(e)
         logging.error(f"Message can't be processed, status: {RAW_MESSAGE_STATUS.PARSER_ERROR}")
-        RawMessage.objects.create(data=data_pack(data), status=RAW_MESSAGE_STATUS.PARSER_ERROR, devid=devid)
+        RawMessage.objects.create(data=data_pack(data), json_data=message_to_str(data), status=RAW_MESSAGE_STATUS.PARSER_ERROR, devid=devid)
         return
 
     meta = create_meta_field(network_data.timestamp, devid, network_data.devtype)

@@ -74,6 +74,8 @@ class RawMessage(models.Model):
     status =  models.CharField(
         max_length=100, blank=True, choices=RAW_MESSAGE_STATUS.choices)
 
+    # Used only for visualization purpose, (re)processing is done for 'data' field
+    json_data = models.JSONField(blank=True, editable=True, verbose_name=_("Raw text converted data"), default=dict)
+
     # Optional, not always available if parsing fails
     devid = models.CharField(max_length=40)
-

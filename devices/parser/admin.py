@@ -1,5 +1,7 @@
 from parser.models import Device, SensorType, RawMessage
 from parser.management.commands import parse_data
+from prettyjson import PrettyJSONWidget
+from django.contrib.postgres.fields import JSONField
 
 from django.contrib import admin
 
@@ -30,6 +32,9 @@ class DeviceAdmin(admin.ModelAdmin):
 
 
 class RawMessageAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        JSONField: {'widget': PrettyJSONWidget(attrs={'initial': 'parsed'}) }
+    }
     list_display = (created_iso, "devid", "status")
     readonly_fields = ('status',)
 
