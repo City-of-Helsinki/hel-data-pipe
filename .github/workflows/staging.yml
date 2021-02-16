@@ -72,6 +72,7 @@ jobs:
             K8S_READINESS_FILE: /app/ready.txt
             CONSUMER: 1
             APPLY_MIGRATIONS: 1
+            INITIALIZE_DATA: 1
 
     runs-on: ubuntu-latest
     name: Deploy staging ${{ matrix.service }}
