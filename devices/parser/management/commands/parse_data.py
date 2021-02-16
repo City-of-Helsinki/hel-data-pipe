@@ -10,13 +10,17 @@ from .sensor_network import DigitaLorawan
 from . import sensor
 from .topics import Topics
 
-from parser.models import SensorType, Device, RawMessage, RAW_MESSAGE_STATUS
+from parser.models import Device, RawMessage, RAW_MESSAGE_STATUS
 
 
-# Keep Kafka connection alive
-if not os.environ.get("COLLECTSTATIC", None):
-    TOPICS = Topics()
+# Global to keep Kafka connection alive
+TOPICS = None
 
+
+def init_topics():
+    global TOPICS
+    if not TOPICS:
+        TOPICS = Topics()
 
 def create_data_field(timestamp, data):
     measurement = {"measurement": data}
@@ -106,6 +110,7 @@ def process_message(packed):
     parsed_topic_name = os.getenv("KAFKA_PARSED_DATA_TOPIC_NAME")
     logging.info(f"Sending data to {parsed_topic_name}")
 
+    init_topics()
     TOPICS.send_to_parsed_data(
         parsed_topic_name,
         value=data_pack(parsed_data_message),
@@ -116,9 +121,8 @@ class Command(BaseCommand):
     """ This command consumes raw messages from Kafka topic. """
 
     def handle(self, *args, **options):
-
+        init_topics()
         # Kubernetes liveness check
         open("/app/ready.txt", "w")
-
         for message in TOPICS.raw_data:
             process_message(message.value)

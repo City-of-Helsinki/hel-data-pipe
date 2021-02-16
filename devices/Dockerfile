@@ -33,7 +33,7 @@ FROM appbase as staticbuilder
 
 ENV VAR_ROOT /app
 COPY --chown=appuser:appuser . /app
-RUN SECRET_KEY="only-used-for-collectstatic" COLLECTSTATIC=1 python manage.py collectstatic --noinput
+RUN SECRET_KEY="only-used-for-collectstatic" python manage.py collectstatic --noinput
 
 # ==============================
 FROM appbase as development
