@@ -41,7 +41,7 @@ class RawMessageAdmin(admin.ModelAdmin):
     def reprocess(modeladmin, request, queryset):
         """ Action function for reprocessing messages. """
         for message in queryset:
-            print("status" + message.status)
+            message.delete()
             parse_data.process_message(message.data)
 
     reprocess.short_description = "Reprocess messages through parser"
