@@ -78,6 +78,7 @@ def catchall(path: str):
     # - from allowed IP address?
     # - request contains valid token or similar?
     data = extract_data_from_flask_request(request)
+
     data["path"] = path
     body_max_size = app.config.get("REQUEST_BODY_MAX_SIZE", 4096)
     if len(data["request"]["body"]) > body_max_size:

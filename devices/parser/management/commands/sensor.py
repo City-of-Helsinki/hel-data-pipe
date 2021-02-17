@@ -1,17 +1,17 @@
-from dateutil.parser import parse
-import logging
-import pytz
-
-from fvhiot.parsers import sensornode
+from fvhiot.parsers import sensornode, dlmbx
 
 
-class DummyParser:
+class UltrasonicParser:
     def __init__(self):
         pass
 
+    def _parse_payload_hex(self, payload, port):
+        return dlmbx.decode_hex(payload, port)
+
     def parse_payload(self, payload):
         """ This is common parsing method, implemented by all parsers. """
-        return payload
+        parsed_data = self._parse_payload_hex(payload["payload_hex"], payload["fport"])
+        return parsed_data
 
 
 class SensornodeParser:
@@ -19,7 +19,7 @@ class SensornodeParser:
         pass
 
     def _parse_payload_hex(self, payload, port):
-        return sensornode.parse_sensornode(payload, port)
+        return sensornode.decode_hex(payload, port)
 
     def parse_payload(self, payload):
         """ This is common parsing method, implemented by all parsers. """
@@ -30,7 +30,7 @@ class SensornodeParser:
 # Available parsers. "name" field corresponds to "Parser" field in sensor types admin panel.
 PARSERS = [
     { "name": "sensornode", "parser": SensornodeParser() },
-    { "name": "dummy", "parser": DummyParser() },
+    { "name": "dlmbx", "parser": UltrasonicParser() },
 ]
 
 
@@ -40,3 +40,9 @@ def get_parser(name):
         if parser["name"] == name:
             return parser["parser"]
     return None
+
+def get_parser_choices():
+    """ Get available parsers to be used as choices in models. """
+
+    # ( <model field>, <visible name> )
+    return [(p["name"], p["name"]) for p in PARSERS]
