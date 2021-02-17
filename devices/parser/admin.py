@@ -36,7 +36,7 @@ class RawMessageAdmin(admin.ModelAdmin):
         JSONField: {'widget': PrettyJSONWidget(attrs={'initial': 'parsed'}) }
     }
     list_display = (created_iso, "devid", "status")
-    readonly_fields = ('status',)
+    readonly_fields = ("devid", "status", "json_data")
 
     def reprocess(modeladmin, request, queryset):
         """ Action function for reprocessing messages. """
@@ -48,7 +48,7 @@ class RawMessageAdmin(admin.ModelAdmin):
     actions = [reprocess]
 
     # TODO: Exclude temporarily to prevent crashing due to binascii.Error: Incorrect padding
-    exclude = ('data',)
+    exclude = ("data",)
 
 admin.site.register(SensorType, SensorTypeAdmin)
 admin.site.register(Device, DeviceAdmin)
