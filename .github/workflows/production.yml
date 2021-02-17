@@ -59,6 +59,7 @@ jobs:
           - service: "devices"
             dir: "devices"
             SERVICE_PORT: "8080"
+            ENABLE_KAFKA: true
             ENABLE_DB: true
           - service: "api"
             dir: "persister"

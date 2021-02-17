@@ -1,6 +1,6 @@
 import json
 import pytz
-from dateutil.parser import parse
+from dateutil.parser import parse as parse_time
 
 
 class DigitaLorawan:
@@ -22,5 +22,5 @@ class DigitaLorawan:
         self.payload = {"payload_hex": self.payload_hex, "fport": self.fport}
 
         self.time = self.ul["Time"]
-        self.timestamp = parse(self.time).astimezone(pytz.UTC).isoformat()
+        self.timestamp = parse_time(self.time).astimezone(pytz.UTC).isoformat()
         self.devtype = "Digital Matter Sensornode LoRaWAN"
