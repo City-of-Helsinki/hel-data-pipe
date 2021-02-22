@@ -4,11 +4,38 @@ The purpose of the system is to be able to receive any kind of IoT data of City 
 
 ## Environments
 
-Review (PR branch): Deployed temporarily at <temporary name>.test.kuva.hel.ninja. See the nams from review's deploy step. Valid until the PR gets closed.
+Review (PR branch): Deployed temporarily at <temporary name>.test.kuva.hel.ninja. See the names from review's deploy step. Valid until the PR gets closed.
 
-Staging (develop branch): https://api.heldatapipe.test.kuva.hel.ninja/, https://endpoint.heldatapipe.test.kuva.hel.ninja/.
+Staging (develop branch): https://api.heldatapipe.test.kuva.hel.ninja/, https://endpoint.heldatapipe.test.kuva.hel.ninja/, https://devices.heldatapipe.test.kuva.hel.ninja/
 
-Production (master branch): https://api.heldatapipe.prod.kuva.hel.ninja/, https://endpoint.heldatapipe.prod.kuva.hel.ninja/.
+Production (master branch): https://api.heldatapipe.prod.kuva.hel.ninja/, https://endpoint.heldatapipe.prod.kuva.hel.ninja/, https://devices.heldatapipe.prod.kuva.hel.ninja/
+
+## Device handling
+
+Parsing of sensor network specific information is done based on the used API endpoint.
+
+Sensor device ID is found from the sensor network information. It is checked against
+device registry:
+- If device ID is not found, store message for later reprocessing.
+- If device ID is found, check sensortype related to device ID and use sensortype 
+specific parser for parsing sensor payload.
+
+Parser data is sent to related Kafka topic and consumed by persister:
+- if datasourcetype of received message is found, expose data via data source API
+
+### Requirements for new device
+
+Following must exist for sensor data to be exposed via data sources API:
+- API endpoint for sensor network data (currently available: LoraWan and Cesva Sentilo).
+- Device ID stored to device registry with related sensortype.
+- Parser for sensortype (currently available: sensornode, dlmbx, cesva).
+- Datasourcetype registered in persister
+
+### Kafka topics
+
+- RAW HTTP data is sent to RAW_DATA topic by sensor network API endpoint.
+- Parser consumes the RAW_DATA topic and sends parsed data further to PARSED_DATA topic.
+- Persister consumers PARSED_DATA topic and exposes information via data sources API.
 
 ## Components
 

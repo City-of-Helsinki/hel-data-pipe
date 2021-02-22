@@ -1,12 +1,14 @@
 import json
 import logging
 import os
+import pytz
+from dateutil.parser import parse as parse_time
 
 from django.core.management.base import BaseCommand
 from flask.helpers import get_flashed_messages
 from fvhiot.utils.data import data_pack, data_unpack
 
-from .sensor_network import DigitaLorawan
+from . import sensor_network
 from . import sensor
 from .topics import Topics
 
@@ -54,18 +56,23 @@ def process_message(packed):
     """ Process single packed raw message. """
 
     data = data_unpack(packed)
+    network_parser = sensor_network.get_parser(data["path"])
 
-    # Hard coded sensor network
+    if not network_parser:
+        logging.error("Network parser not found for endpoint {}".format(data["path"]))
+        RawMessage.objects.create(data=data_pack(data), json_data=message_to_str(data), status=RAW_MESSAGE_STATUS.NETWORK_PARSER_NOT_FOUND)
+        return
+
     try:
-        network_data = DigitaLorawan(data["request"])
+        network_parser.parse(data["request"])
     except Exception as e:
         logging.error(e)
         logging.error(f"Message can't be processed, status: {RAW_MESSAGE_STATUS.NW_DATA_ERROR}")
         RawMessage.objects.create(data=data_pack(data), json_data=message_to_str(data), status=RAW_MESSAGE_STATUS.NW_DATA_ERROR)
         return
 
-    devid = network_data.device_id
-    logging.info(f"Reveiced data from device id {devid}")
+    devid = network_parser.device_id
+    logging.debug(f"Received data from device id {devid}")
 
     try:
         registered_device = Device.objects.get(devid=devid)
@@ -94,7 +101,7 @@ def process_message(packed):
         return
 
     try:
-        parsed_data = parser.parse_payload(network_data.payload)
+        parsed_data = parser.parse_payload(network_parser.payload)
     except Exception as e:
         logging.error(f"Hex payload parser failed for device ID {devid}")
         logging.error(e)
@@ -102,8 +109,13 @@ def process_message(packed):
         RawMessage.objects.create(data=data_pack(data), json_data=message_to_str(data), status=RAW_MESSAGE_STATUS.PARSER_ERROR, devid=devid)
         return
 
-    meta = create_meta_field(network_data.timestamp, devid, network_data.devtype)
-    dataline = create_data_field(network_data.timestamp, parsed_data)
+    if getattr(network_parser, "timestamp", None):
+        timestamp = network_parser.timestamp
+    else:
+        timestamp = parse_time(data["timestamp"]).astimezone(pytz.UTC).isoformat()
+
+    meta = create_meta_field(timestamp, devid, network_parser.devtype)
+    dataline = create_data_field(timestamp, parsed_data)
     parsed_data_message = create_message(meta, dataline)
     logging.debug(json.dumps(parsed_data_message, indent=1))
 

@@ -59,6 +59,7 @@ class Device(models.Model):
 
 
 class RAW_MESSAGE_STATUS(models.TextChoices):
+    NETWORK_PARSER_NOT_FOUND = 'network-parser-not-found', _('Network parser not found')
     NW_DATA_ERROR =  'nw-data-error', _('Invalid sensor network data')
     DEVICE_ID_NOT_FOUND = 'device-id-not-found', _('Device ID not found')
     PARSER_NOT_FOUND = 'parser-not-found', _('Parser not found')
