@@ -1,9 +1,9 @@
-from parser.models import Device, SensorType, RawMessage
 from parser.management.commands import parse_data
-from prettyjson import PrettyJSONWidget
-from django.contrib.postgres.fields import JSONField
+from parser.models import Device, RawMessage, SensorType
 
 from django.contrib import admin
+from django.contrib.postgres.fields import JSONField
+from prettyjson import PrettyJSONWidget
 
 
 # Proper formatting for timestamps instead of "Oct. 27, 2020, 2:58 p.m." nonsense
@@ -33,7 +33,7 @@ class DeviceAdmin(admin.ModelAdmin):
 
 class RawMessageAdmin(admin.ModelAdmin):
     formfield_overrides = {
-        JSONField: {'widget': PrettyJSONWidget(attrs={'initial': 'parsed'}) }
+        JSONField: {"widget": PrettyJSONWidget(attrs={"initial": "parsed"})}
     }
     list_display = (created_iso, "devid", "status")
     readonly_fields = ("devid", "status", "json_data")
@@ -49,6 +49,7 @@ class RawMessageAdmin(admin.ModelAdmin):
 
     # TODO: Exclude temporarily to prevent crashing due to binascii.Error: Incorrect padding
     exclude = ("data",)
+
 
 admin.site.register(SensorType, SensorTypeAdmin)
 admin.site.register(Device, DeviceAdmin)

@@ -1,8 +1,9 @@
-from fvhiot.parsers import sensornode, dlmbx
-import pytz
 import datetime
-from dateutil.parser import parse as parse_time
 import logging
+
+import pytz
+from dateutil.parser import parse as parse_time
+from fvhiot.parsers import dlmbx, sensornode
 
 
 class UltrasonicParser:
@@ -44,11 +45,11 @@ class CesvaParser:
 
             time = parse_time(meas["observations"][0]["timestamp"]).astimezone(pytz.UTC)
 
-            if postfix == 'N':
+            if postfix == "N":
                 meas_type = "LAeq"
                 value = meas["observations"][0]["value"]
                 parsed_data.append({meas_type: value, "time": time.isoformat()})
-            elif postfix == 'S':
+            elif postfix == "S":
                 meas_type = "LAeq1s"
                 # Multiple values, each has own time stamp
                 values_str = meas["observations"][0]["value"]
@@ -63,7 +64,9 @@ class CesvaParser:
                     # 60 values, timestamp only for the last one. Calculate entry specific times.
                     time_delta_s = val_count - i - 1
                     entry_time = time - datetime.timedelta(seconds=time_delta_s)
-                    parsed_data.append({meas_type: value, "time": entry_time.isoformat()})
+                    parsed_data.append(
+                        {meas_type: value, "time": entry_time.isoformat()}
+                    )
 
             else:
                 # Code not implemented
@@ -74,9 +77,9 @@ class CesvaParser:
 
 # Available parsers. "name" field corresponds to "Parser" field in sensor types admin panel.
 PARSERS = [
-    { "name": "sensornode", "parser": SensornodeParser() },
-    { "name": "dlmbx", "parser": UltrasonicParser() },
-    { "name": "cesva", "parser": CesvaParser() },
+    {"name": "sensornode", "parser": SensornodeParser()},
+    {"name": "dlmbx", "parser": UltrasonicParser()},
+    {"name": "cesva", "parser": CesvaParser()},
 ]
 
 
@@ -86,6 +89,7 @@ def get_parser(name):
         if parser["name"] == name:
             return parser["parser"]
     return None
+
 
 def get_parser_choices():
     """ Get available parsers to be used as choices in models. """

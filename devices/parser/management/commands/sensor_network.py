@@ -1,8 +1,8 @@
 import json
+import logging
+
 import pytz
 from dateutil.parser import parse as parse_time
-
-import logging
 
 
 class DigitaLorawan:
@@ -49,7 +49,9 @@ class Cesva:
         device_ids = [sensor["sensor"][:-2] for sensor in self.body_json["sensors"]]
 
         if len(set(device_ids)) > 1:
-            logging.warning("Data for multiple different sensors inside payload. Not supported.")
+            logging.warning(
+                "Data for multiple different sensors inside payload. Not supported."
+            )
         return device_ids[0]
 
     def _parse(self):
@@ -61,10 +63,11 @@ class Cesva:
         self.devtype = "CESVA T120"
 
 
-NETWORKS  = [
-    { "name": "sensornode", "parser": DigitaLorawan() },
-    { "name": "cesva", "parser": Cesva() },
+NETWORKS = [
+    {"name": "sensornode", "parser": DigitaLorawan()},
+    {"name": "cesva", "parser": Cesva()},
 ]
+
 
 def get_parser(name):
     """ Get parser based on name. """

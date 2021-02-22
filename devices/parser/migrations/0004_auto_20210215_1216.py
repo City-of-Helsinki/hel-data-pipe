@@ -6,24 +6,49 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parser', '0003_auto_20210215_0846'),
+        ("parser", "0003_auto_20210215_0846"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='RawMessage',
+            name="RawMessage",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('data', models.TextField(blank=True, verbose_name='Raw data')),
-                ('status', models.CharField(blank=True, choices=[('nw-data-error', 'Invalid sensor network data'), ('device-id-not-found', 'Device ID not found'), ('parser-not-found', 'Parser not found'), ('parser-error', 'Parsing of hex payload failed')], max_length=100)),
-                ('devid', models.CharField(max_length=40)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("data", models.TextField(blank=True, verbose_name="Raw data")),
+                (
+                    "status",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("nw-data-error", "Invalid sensor network data"),
+                            ("device-id-not-found", "Device ID not found"),
+                            ("parser-not-found", "Parser not found"),
+                            ("parser-error", "Parsing of hex payload failed"),
+                        ],
+                        max_length=100,
+                    ),
+                ),
+                ("devid", models.CharField(max_length=40)),
             ],
         ),
         migrations.AlterField(
-            model_name='sensortype',
-            name='parser',
-            field=models.CharField(blank=True, choices=[('sensornode', 'sensornode'), ('ultrasonic', 'ultrasonic')], max_length=100, verbose_name='Parser'),
+            model_name="sensortype",
+            name="parser",
+            field=models.CharField(
+                blank=True,
+                choices=[("sensornode", "sensornode"), ("ultrasonic", "ultrasonic")],
+                max_length=100,
+                verbose_name="Parser",
+            ),
         ),
     ]

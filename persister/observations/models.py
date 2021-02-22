@@ -1,6 +1,7 @@
+import logging
+
 from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
-import logging
 
 
 class Datasourcetype(models.Model):
@@ -178,16 +179,22 @@ def save_data(message):
                     measurement = items["measurement"]
 
                     if isinstance(measurement, dict):
-                        entry_time = measurement['time'] if 'time' in measurement else None
+                        entry_time = (
+                            measurement["time"] if "time" in measurement else None
+                        )
                         for key in measurement:
-                            if key != 'time':
-                                save_measurement(datasource, key, measurement, data_time)
+                            if key != "time":
+                                save_measurement(
+                                    datasource, key, measurement, data_time
+                                )
                     else:
                         for entry in measurement:
-                            entry_time = entry['time'] if 'time' in entry else None
+                            entry_time = entry["time"] if "time" in entry else None
                             for key in entry:
-                                if key != 'time':
-                                    save_measurement(datasource, key, entry, entry_time or data_time)
+                                if key != "time":
+                                    save_measurement(
+                                        datasource, key, entry, entry_time or data_time
+                                    )
 
     except Exception as e:
         logging.error(e)

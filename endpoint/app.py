@@ -69,10 +69,10 @@ def catchall(path: str):
 
     # Reject requests not matching the one defined in env
     if path not in [endpoint_path, "cesva"]:
-       logging.warning(
-           f"{endpoint_path} did not match {path}. Rejecting this request."
-       )
-       abort(404, description="Resource not found")
+        logging.warning(
+            f"{endpoint_path} did not match {path}. Rejecting this request."
+        )
+        abort(404, description="Resource not found")
 
     if app.producer is None:
         app.producer = get_kafka_producer()
@@ -89,8 +89,11 @@ def catchall(path: str):
     logging.info(f"Sending {endpoint_path} data to {topic_name}")
 
     def on_send_success(record_metadata):
-        logging.info("Successfully sent to topic {}, partition {}, offset {}".format(
-            record_metadata.topic, record_metadata.partition, record_metadata.offset))
+        logging.info(
+            "Successfully sent to topic {}, partition {}, offset {}".format(
+                record_metadata.topic, record_metadata.partition, record_metadata.offset
+            )
+        )
 
     def on_send_error(excp):
         logging.error("Error on Kafka producer", exc_info=excp)
