@@ -6,17 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parser', '0005_auto_20210215_1910'),
+        ("parser", "0005_auto_20210215_1910"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='rawmessage',
-            name='data',
+            model_name="rawmessage",
+            name="data",
         ),
         migrations.AddField(
-            model_name='rawmessage',
-            name='data',
-            field=models.BinaryField(blank=True, editable=True, verbose_name='Raw data'),
+            model_name="rawmessage",
+            name="data",
+            field=models.BinaryField(
+                blank=True, editable=True, verbose_name="Raw data"
+            ),
         ),
     ]

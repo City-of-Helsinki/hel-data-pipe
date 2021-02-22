@@ -1,6 +1,7 @@
+import logging
+
 from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
-import logging
 
 
 class Datasourcetype(models.Model):
@@ -153,21 +154,47 @@ def save_measurement(datasource, key, measurement, time):
 def save_data(message):
     # get the data source type and data source
     devid = message["meta"]["dev-id"]
-    datasourcetype = Datasourcetype.objects.get(name=message["meta"]["dev-type"])
+    try:
+        devtype = message["meta"]["dev-type"]
+        datasourcetype = Datasourcetype.objects.get(name=devtype)
+    except Datasourcetype.DoesNotExist:
+        logging.error(f"Can't find Datasourcetype {devtype}")
+        return
     try:
         datasource = datasourcetype.datasources.get(devid=devid)
     except Datasource.DoesNotExist:
         logging.debug(f"Creating new datasource {devid}")
         datasource = Datasource(devid=devid, datasourcetype=datasourcetype)
         datasource.save()
-    for data in message["data"]:
-        time = None
-        for items in data:
-            if "time" in items:
-                time = items["time"]
-                logging.debug(f"Measurement time: {time}")
-            elif "measurement" in items:
-                # save all the measurements
-                measurement = items["measurement"]
-                for key in measurement or []:
-                    save_measurement(datasource, key, measurement, time)
+
+    # Timestamp may be received inside "measurement" or inside "data", prefer lower level (measurement over data)
+    try:
+        for data in message["data"]:
+            data_time = None
+            for items in data:
+                if "time" in items:
+                    # high level time
+                    data_time = items["time"]
+                elif "measurement" in items:
+                    measurement = items["measurement"]
+
+                    if isinstance(measurement, dict):
+                        entry_time = (
+                            measurement["time"] if "time" in measurement else None
+                        )
+                        for key in measurement:
+                            if key != "time":
+                                save_measurement(
+                                    datasource, key, measurement, data_time
+                                )
+                    else:
+                        for entry in measurement:
+                            entry_time = entry["time"] if "time" in entry else None
+                            for key in entry:
+                                if key != "time":
+                                    save_measurement(
+                                        datasource, key, entry, entry_time or data_time
+                                    )
+
+    except Exception as e:
+        logging.error(e)

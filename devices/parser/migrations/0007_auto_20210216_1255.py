@@ -6,18 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parser', '0006_auto_20210215_1952'),
+        ("parser", "0006_auto_20210215_1952"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='rawmessage',
-            name='json_data',
-            field=models.JSONField(blank=True, default='', editable=False, verbose_name='Raw JSON converted data'),
+            model_name="rawmessage",
+            name="json_data",
+            field=models.JSONField(
+                blank=True,
+                default="",
+                editable=False,
+                verbose_name="Raw JSON converted data",
+            ),
         ),
         migrations.AlterField(
-            model_name='sensortype',
-            name='parser',
-            field=models.CharField(blank=True, choices=[('sensornode', 'sensornode'), ('dlmbx', 'dlmbx')], max_length=100, verbose_name='Parser'),
+            model_name="sensortype",
+            name="parser",
+            field=models.CharField(
+                blank=True,
+                choices=[("sensornode", "sensornode"), ("dlmbx", "dlmbx")],
+                max_length=100,
+                verbose_name="Parser",
+            ),
         ),
     ]

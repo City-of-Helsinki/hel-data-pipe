@@ -37,9 +37,13 @@ class Topics:
         """ Send data to given topic in PARSED data topic. """
 
         def on_send_success(record_metadata):
-            logging.info(record_metadata.topic)
-            logging.info(record_metadata.partition)
-            logging.info(record_metadata.offset)
+            logging.info(
+                "Successfully sent to topic {}, partition {}, offset {}".format(
+                    record_metadata.topic,
+                    record_metadata.partition,
+                    record_metadata.offset,
+                )
+            )
 
         def on_send_error(excp):
             logging.error("Error on Kafka producer", exc_info=excp)
