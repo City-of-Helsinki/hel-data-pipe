@@ -43,7 +43,7 @@ class CesvaParser:
         for meas in payload:
             postfix = meas["sensor"][-1:]
 
-            time = parse_time(meas["observations"][0]["timestamp"], dayfirst=False).astimezone(pytz.UTC)
+            time = parse_time(meas["observations"][0]["timestamp"], dayfirst=True).astimezone(pytz.UTC)
 
             if postfix == "N":
                 meas_type = "LAeq"
