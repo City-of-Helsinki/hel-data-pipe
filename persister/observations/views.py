@@ -4,6 +4,7 @@ from rest_framework.response import Response
 
 from .models import Channel, Datasource, Value
 from .serializers import ChannelSerializer, DatasourceSerializer, ValueSerializer
+from persister.pagination import CursorTimePagination
 
 
 class ChannelViewSet(viewsets.ReadOnlyModelViewSet):
@@ -22,6 +23,7 @@ class DatasourceViewSet(viewsets.ReadOnlyModelViewSet):
 class ValueViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Value.objects.all().order_by("time")
     serializer_class = ValueSerializer
+    pagination_class = CursorTimePagination
 
     def get_queryset(self):
         return Value.objects.filter(
