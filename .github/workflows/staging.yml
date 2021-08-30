@@ -3,6 +3,12 @@ on:
   push:
     branches:
       - develop
+  workflow_dispatch:
+    inputs:
+      build_required:
+        description: "Build images (true/false)"
+        required: true
+        default: "false"
 
 env:
   CONTAINER_REGISTRY: ghcr.io
@@ -29,6 +35,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build ${{ matrix.service }}
+        if: github.event_name == 'push' || github.event.inputs.build_required == 'true'
         uses: andersinno/kolga-build-action@v2
         env:
           DOCKER_BUILD_SOURCE: ./${{ matrix.service }}/Dockerfile
